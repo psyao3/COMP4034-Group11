@@ -29,6 +29,10 @@ class RobotHandler():
         self.pose = Pose2D()
         self.pose.x, self.pose.y, self.pose.theta = 0.0, 0.0, 0.0
 
+        # Set desired pose
+        self.des_pose = Pose2D()
+        self.des_pose.x, self.des_pose.y, self.des_pose.theta = 0.0, 0.0, 0.0
+
         # Initialise trajectory logging
         self.trajectory = []
         self.logging_counter = 0
@@ -37,41 +41,60 @@ class RobotHandler():
         rospy.init_node(node_name, anonymous=bool)
 
     def _move_forward(self, distance, linear_speed = 0.5):
-
         print "Moving forward!"
-        self._move(movement_type="move_forward", amount=distance, speed=linear_speed)
+        self._move(movement_type="linear", target=distance, speed=linear_speed)
 
     def _rotate(self, angle_in_rad, angular_speed):
-
         print "Rotating!"
-        self._move(movement_type="rotate", amount=angle_in_rad, speed=angular_speed)
+        self._move(movement_type="angular", target=angle_in_rad, speed=angular_speed)
 
-    def _move(self, movement_type, amount, speed):
+    def _move(self, movement_type, target, speed):
 
         # Generate Twist message and set the linear (m/s) or angular (rad/s) speed 
         twist_msg = Twist()
-
-        if movement_type == "move_forward":
+        if movement_type == 'linear':
             twist_msg.linear.x = speed
-        elif movement_type == "rotate":
+        elif movement_type == 'angular':
             twist_msg.angular.z = speed
-        else:
-            print("Invalid value.")
-            return 1
 
         # Calculate duration
         initial_time = rospy.Time.now().to_sec()
-        time_necessary_in_s = amount / speed
+        time_necessary_in_s = target / speed
+
+        # Calculate stopping criteria
+        initial_pose = Pose2D()
+        initial_pose.x, initial_pose.y, initial_pose.theta = self.pose.x, self.pose.y, self.pose.theta
 
         # Publish the message
-        while rospy.Time.now().to_sec() - initial_time < rospy.Duration(time_necessary_in_s).to_sec() and not rospy.is_shutdown(): 
+        while self._calculate_distance(movement_type, self.pose, initial_pose) < target and not rospy.is_shutdown(): 
             self._pub.publish(twist_msg)
-        
+       
         self._stop()
 
     def _stop(self):
         twist_msg = Twist()
         self._pub.publish(twist_msg)
+
+    def _calculate_linear_distance(self, pose1, pose2):
+        x1, y1 = pose1.x, pose1.y
+        x2, y2 = pose2.x, pose2.y
+        return math.sqrt((x2 - x1)**2 + (y2 - y1)**2) 
+
+    def _calculate_angular_distance(self, pose1, pose2):
+        theta1, theta2 = pose1.theta, pose2.theta
+        angle = theta2 - theta1
+        if angle > math.pi:
+            angle -= 2*math.pi
+        elif angle < -math.pi:
+            angle += 2*math.pi
+        return abs(angle)
+
+    def _calculate_distance(self, type, pose1, pose2):
+        if type == 'linear':
+            distance = self._calculate_linear_distance(pose1, pose2)
+        elif type == 'angular':
+            distance  = self._calculate_angular_distance(pose1, pose2)
+        return distance 
 
     def _odom_callback(self, msg):
         # Get (x, y, theta) specification from odometry topic
@@ -80,7 +103,7 @@ class RobotHandler():
         (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(quarternion)
 
         # self.pose.theta = yaw
-        self.pose.theta = yaw 
+        self.pose.theta = yaw
         self.pose.x = msg.pose.pose.position.x
         self.pose.y = msg.pose.pose.position.y
         
