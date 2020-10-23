@@ -3,11 +3,7 @@
 import rospy
 import tf
 import math
-from geometry_msgs.msg import Twist, Pose, Pose2D
-from nav_msgs.msg import Odometry
-
-import publisher as pub
-import subscriber as sub
+from geometry_msgs.msg import Twist, Pose2D
 import visualiser 
 
 class RobotHandler():
@@ -16,11 +12,11 @@ class RobotHandler():
 
         # Initialise rospy and the node
         rospy.on_shutdown(self._stop)
-        self._initialise_node(node_name=robot_name)
+        rospy.init_node(node_name=robot_name, anonymous=True)
 
         # Create publisher and subscriber
-        self._pub = pub._create_publisher(name='/cmd_vel', type=Twist)
-        self._sub = sub._create_subscriber(name='/odom', type=Odometry, callback=self._odom_callback)
+        self._pub = rospy.Publisher(name='/cmd_vel', type=Twist, queue_size=100)
+        self._sub = rospy.Subscriber(name='/odom', type=Odometry, callback=self._odom_callback)
 
         # Set the frequency
         self._rate = rospy.Rate(100)
@@ -29,24 +25,9 @@ class RobotHandler():
         self.pose = Pose2D()
         self.pose.x, self.pose.y, self.pose.theta = 0.0, 0.0, 0.0
 
-        # Set desired pose
-        self.des_pose = Pose2D()
-        self.des_pose.x, self.des_pose.y, self.des_pose.theta = 0.0, 0.0, 0.0
-
         # Initialise trajectory logging
         self.trajectory = []
         self.logging_counter = 0
-
-    def _initialise_node(self, node_name, anonymous = True):
-        rospy.init_node(node_name, anonymous=bool)
-
-    def _move_forward(self, distance, linear_speed = 0.5):
-        print "Moving forward!"
-        self._move(movement_type="linear", target=distance, speed=linear_speed)
-
-    def _rotate(self, angle_in_rad, angular_speed):
-        print "Rotating!"
-        self._move(movement_type="angular", target=angle_in_rad, speed=angular_speed)
 
     def _move(self, movement_type, target, speed):
 
@@ -57,10 +38,6 @@ class RobotHandler():
         elif movement_type == 'angular':
             twist_msg.angular.z = speed
 
-        # Calculate duration
-        initial_time = rospy.Time.now().to_sec()
-        time_necessary_in_s = target / speed
-
         # Calculate stopping criteria
         initial_pose = Pose2D()
         initial_pose.x, initial_pose.y, initial_pose.theta = self.pose.x, self.pose.y, self.pose.theta
@@ -70,6 +47,14 @@ class RobotHandler():
             self._pub.publish(twist_msg)
        
         self._stop()
+        
+    def _move_forward(self, distance, linear_speed = 0.5):
+        print "Moving forward!"
+        self._move(movement_type="linear", target=distance, speed=linear_speed)
+
+    def _rotate(self, angle_in_rad, angular_speed):
+        print "Rotating!"
+        self._move(movement_type="angular", target=angle_in_rad, speed=angular_speed)
 
     def _stop(self):
         twist_msg = Twist()
