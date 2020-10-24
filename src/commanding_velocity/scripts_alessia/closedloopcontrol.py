@@ -87,7 +87,6 @@ class RobotHandler():
                     msg.pose.pose.orientation.z, msg.pose.pose.orientation.w]
         (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(quarternion)
 
-        # self.pose.theta = yaw
         self.pose.theta = yaw
         self.pose.x = msg.pose.pose.position.x
         self.pose.y = msg.pose.pose.position.y
