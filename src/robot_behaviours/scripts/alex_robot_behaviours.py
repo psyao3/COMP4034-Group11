@@ -18,7 +18,9 @@ class robot_behaviours:
         self.degrees = 10 # Define average distance to be calculated over +- x degrees in a direction.
 
         self.rate = rospy.Rate(10) # hz
-
+                  
+        self.linear_speed = 0.4
+        self.angular_speed = 0.4
 
         # Define publisher to issue Twist messages depending on the current perception (scan data)
         # Messages will be sent within the scan_callback
@@ -85,7 +87,7 @@ class robot_behaviours:
         if is_obstacle:
             # Use obstacle avoidance behaviour
             rospy.loginfo("Behaviour: Obstacle Avoidance")
-            twist_msg = self.obstacle_avoidance()
+            twist_msg = self.obstacle_avoidance(ranges_array = ranges)
         elif is_wall:
             # Use right hand wall following behaviour
             rospy.loginfo("Behaviour: Right hand wall following")
@@ -130,8 +132,22 @@ class robot_behaviours:
 
     # Basic method signatures, which need to return a twist message.
     # Add extra parameters as needed.
-    def obstacle_avoidance(self):
-        return
+    def obstacle_avoidance(self, ranges_array):
+      
+        window_size = 4
+        threshold = 0.25
+        front_right = [45-window_size/2, 45+window_size/2]
+        front_left = [315-window_size/2, 315+window_size/2]
+      
+        twist_msg = Twist()
+         
+        if np.mean(ranges_array[front_right[0]:front_right[1]]) < threshold:
+            twist_msg.angular.z = -self.rotational_speed
+        elif np.mean(ranges_array[front_left[0]:front_left[1]]) < threshold:
+            twist_msg.angular.z = self.angular_speed
+        else: 
+            twist_msg.angular.z = self.rotational_speed
+        return twist_msg
     
     def wall_following(self):
         return
