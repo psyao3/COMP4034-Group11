@@ -142,7 +142,7 @@ class robot_behaviours:
         twist_msg = Twist()
 
         if np.mean(ranges_array[front_right[0]:front_right[1]]) < threshold:
-            twist_msg.angular.z = -self.rotational_speed
+            twist_msg.angular.z = -self.angular_speed
         elif np.mean(ranges_array[front_left[0]:front_left[1]]) < threshold:
             twist_msg.angular.z = self.angular_speed
         else: 
