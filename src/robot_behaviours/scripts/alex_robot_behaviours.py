@@ -64,7 +64,7 @@ class robot_behaviours:
 
         # Look at a range e.g. 90 degrees range about 270
         # Assuming there is a wall nearby, a and b form two edges of the triangle
-        a = ranges[315] 
+        a = ranges[314] # Since indexing starts at 0 
         b = ranges[225]
 
         # Use law of cosines to get unknown side, the length of the wall:
