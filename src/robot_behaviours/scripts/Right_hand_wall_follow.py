@@ -11,29 +11,12 @@ from sensor_msgs.msg import LaserScan
 
 class WallFollower():
 
-    def __init__(self, robot_name = 'robot'):
+    def __init__(self):
 
         # Initialise rospy and the node
         rospy.on_shutdown(self.stop_moving)
         rospy.init_node('wall_follower', anonymous=True)
-
-        # Create publisher and subscriber
-        self.pub = rospy.Publisher('/cmd_vel', Twist, queue_size=100)
-        rospy.Subscriber('/odom', Odometry, self.odom_callback)
-        rospy.Subscriber('/scan', LaserScan, self.laserscan_callback )
-
-        # Set the frequency
-        rospy.Rate(100)
-
-        # Set initial pose
-        self.pose = Pose2D()
-        self.pose.x, self.pose.y, self.pose.theta = 0.0, 0.0, 0.0
-
-        self.ranges = None
-        self.dist_to_wall = 0.25
-        self.angle_min = -math.pi/2
-        self.angle_max = math.pi/2
-        self.range_size = None
+        self.dist_to_wall = 0.6
         self.states = 0
         self.position_window = {
             'right': 0,
@@ -42,33 +25,22 @@ class WallFollower():
             'front_left': 0,
             'left': 0,
         }
+        # Create publisher and subscriber
+        self.pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
+        rospy.Subscriber('/scan', LaserScan, self.laserscan_callback )
 
-    def odom_callback(self, msg):
-            # Get (x, y, theta) specification from odometry topic
-            quarternion = [msg.pose.pose.orientation.x,msg.pose.pose.orientation.y,\
-                        msg.pose.pose.orientation.z, msg.pose.pose.orientation.w]
-            (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(quarternion)
-
-            # self.pose.theta = yaw
-            self.pose.theta = yaw
-            self.pose.x = msg.pose.pose.position.x
-            self.pose.y = msg.pose.pose.position.y
+        # Set the frequency
+        rospy.Rate(10)
         
     def laserscan_callback(self, msg):
-        self.ranges = msg.ranges
-        self.range_size = len(msg.ranges)
-        print(self.range_size)
-        self.ranges.angle_min = self.angle_min
-        self.ranges.angle_max = self.angle_max
-        self.ranges.range_min = self.dist_to_wall
-        # Ranges array of size 720
-        # 0-719 (5 positional ranges) equals 144 for each 'window' of ranges
+        ranges = msg.ranges
+
         self.position_window = {
-            'right': min(min(self.range_size[0:143]),25),
-            'front_right': min(min(self.range_size[144:287]),25),
-            'front': min(min(self.range_size[288:431]),25),
-            'front_left': min(min(self.range_size[432:575]),25),
-            'left': min(min(self.range_size[576:719]),25),
+            'right': min(ranges[270:306]),
+            'front_right': min(ranges[307:342]),
+            'front': min(min(ranges[0:16]),min(ranges[343:359])),
+            'front_left': min(ranges[17:53]),
+            'left': min(ranges[54:90]),
         }
 
         self.position_decider()
@@ -76,7 +48,7 @@ class WallFollower():
     def position_decider(self):
 
         if self.position_window['front'] > self.dist_to_wall and self.position_window['front_right'] > self.dist_to_wall \
-            and self.position_window['front_right'] > self.dist_to_wall:
+            and self.position_window['front_right'] > self.dist_to_wall and self.position_window['right'] > self.dist_to_wall:
             # random_wander maybe?
             self.states = 0
         elif self.position_window['front'] < self.dist_to_wall and self.position_window['front_right'] > self.dist_to_wall \
@@ -84,7 +56,7 @@ class WallFollower():
             self.states = 1
         elif self.position_window['front'] > self.dist_to_wall and self.position_window['front_right'] < self.dist_to_wall \
             and self.position_window['front_left'] > self.dist_to_wall:
-            self.states = 2
+            self.states = 3
         elif self.position_window['front'] > self.dist_to_wall and self.position_window['front_right'] > self.dist_to_wall \
             and self.position_window['front_left'] < self.dist_to_wall:
             # random_wander again
@@ -100,47 +72,62 @@ class WallFollower():
             self.states = 1
         elif self.position_window['front'] > self.dist_to_wall and self.position_window['front_right'] < self.dist_to_wall \
             and self.position_window['front_left'] < self.dist_to_wall:
-            self.states = 0   
+            self.states = 0
+        
         else:
             rospy.loginfo("Error locating position")
 
 
-    def move(self, angle, speed=0.2):
+    def move(self, angle, speed):
         msgForward = Twist()
         msgForward.linear.x = speed
-        msgForward.angular.z = angle
+        msgForward.angular.z = abs(angle)
 
-        self.pub.publish(msgForward)
-        self.stop_moving()
+        return msgForward
 
-    def rotate(self, speed=0.1):
+    def rotate(self, direction, speed):
         msgTurn = Twist()
         msgTurn.linear.x = 0
-        msgTurn.angular.z = speed
+        if direction == 'left':
+            msgTurn.angular.z = abs(speed)
+        elif direction == 'stuck':
+            msgTurn.linear.x = 0.1
+            msgTurn.angular.z = abs(speed)
 
-        self.pub.publish(msgTurn)
-        self.stop_moving()
+        return msgTurn
          
     def stop_moving(self):
         msgStop = Twist()
-        self.pub.publish(msgStop)
+        
+        return msgStop
 
-    def find_a_wall(self):
+    def wall_following(self):
 
-        if self.states == 0:
-            self.move(-0.3)
-        elif self.states == 1:
-            self.rotate()
-        elif self.states == 2:
-            self.move(0)
-        else:
-            rospy.loginfo("Error")
+        msg = Twist()
 
+        while not rospy.is_shutdown():
+            if self.states == 0:
+                rospy.loginfo("finding wall")
+                msg = self.move(0,0.2)
+            elif self.states == 1:
+                rospy.loginfo("rotating left")
+                msg = self.rotate('left', 0.2)
+            elif self.states == 2:
+                rospy.loginfo("moving away from wall")
+                msg = self.rotate('stuck', 0.2)
+            elif self.states == 3:
+                rospy.loginfo("following wall")
+                msg = self.move(0, 0.2)
+            else:
+                rospy.loginfo("Error")
+            
+            self.pub.publish(msg)
 
 if __name__ == '__main__':
     try:
         robot = WallFollower()
-        robot.find_a_wall()
+        robot.wall_following()
+        rospy.spin()
     except rospy.ROSInterruptException as e:
         print("An exception was caught.")
         raise e
