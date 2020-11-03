@@ -22,8 +22,8 @@ class RobotHandler():
 
         # Create publisher and subscribers
         self._pub = rospy.Publisher('/cmd_vel', Twist, queue_size=50)
-        self._sub = rospy.Subscriber('/scan', LaserScan, self._callback)
-        self._sub_odom = rospy.Subscriber('/odom', Odometry, self._odom_callback)
+        rospy.Subscriber('/scan', LaserScan, self._callback)
+        rospy.Subscriber('/odom', Odometry, self._odom_callback)
 
         # Set the frequency
         self._rate = rospy.Rate(10)
@@ -38,50 +38,56 @@ class RobotHandler():
         self.linear_speed = 0.4
         self.rotational_speed = 0.4
 
+        self.threshold = 0.5
+
         self.should_move_forward = True
         self.rotation_sense = 'clockwise'
+        self.previous_rotation_sense = self.rotation_sense
 
         self.state = "Start"
 
         while not rospy.is_shutdown():
 
             if self.state == 'Random_walk' and self.should_move_forward:
-                print("Random Walk")
+                rospy.loginfo("Random Walk - Walking")
                 self.should_move_forward = not self.should_move_forward
                 self._move_forward(distance=1, linear_speed=self.linear_speed)
+
             elif self.state == 'Random_walk' and not self.should_move_forward:
+                rospy.loginfo("Random Walk - Rotating")
                 angle = random.uniform(-math.pi, math.pi)
-                print(angle)
+                rospy.loginfo(angle)
                 self.should_move_forward = not self.should_move_forward
                 self._rotate(angle_in_rad=angle, angular_speed=self.rotational_speed)
+
             elif self.state == 'Obstacle':
                 twist_msg = Twist()
                 if self.rotation_sense == 'clockwise':
-                    twist_msg.angular.z = self.rotational_speed
-                elif self.rotation_sense == 'anticlockwise':
                     twist_msg.angular.z = -self.rotational_speed
+                elif self.rotation_sense == 'anticlockwise':
+                    twist_msg.angular.z = self.rotational_speed
                 self._pub.publish(twist_msg)
                 self.should_move_forward = True
 
-    def _avoid_obstacle(self):
-
-        window_size = 4
-        threshold = 0.25
-        front = [0, 0+window_size/2, 360-window_size/2, 360]
-        front_right = [45-window_size/2, 45+window_size/2]
-        front_left = [315-window_size/2, 315+window_size/2]
-
-        twist_msg = Twist()
-
-        while self.state == 'Obstacle':
-            if np.mean(self.ranges[front[0]:front[1]] + self.ranges[front[2]:front[3]]) <= threshold or \
-                    np.mean(self.ranges[front_right[0]:front_right[1]]) < threshold or \
-                    np.mean(self.ranges[front_left[0]:front_left[1]]) < threshold:
-                twist_msg.angular.z = self.rotational_speed
+            elif self.state == 'Wall Following':
+                twist_msg = Twist()
+                twist_msg.linear.x = self.linear_speed
                 self._pub.publish(twist_msg)
-            else:
-                self._stop()
-                self.state = 'Random Walk'
+
+        rospy.sleep(1)
+
+    def average_distance(self, ranges, index, degree):
+
+        angles = range(index - degree, index + degree - 1)
+
+        for i, ang in enumerate(angles):
+            if ang > 360:
+                angles[i] = ang - 360
+
+        arr = np.array(ranges)
+        avg = np.mean(arr[angles])
+
+        return avg
 
     def _calculate_distance(self, type, pose1, pose2):
         if type == 'linear':
@@ -95,11 +101,9 @@ class RobotHandler():
         self._pub.publish(twist_msg)
 
     def _move_forward(self, distance, linear_speed=0.5):
-        print("Moving forward!")
         self._move(movement_type="linear", target=distance, speed=linear_speed)
 
     def _rotate(self, angle_in_rad, angular_speed):
-        print("Rotating!")
         self._move(movement_type="angular", target=angle_in_rad, speed=angular_speed)
 
     def _move(self, movement_type, target, speed):
@@ -110,8 +114,8 @@ class RobotHandler():
             twist_msg.linear.x = speed
         elif movement_type == 'angular':
             if target < 0:
-                target = target*-1
-                speed = speed*-1
+                target = target * -1
+                speed = speed * -1
             twist_msg.angular.z = speed
 
         # Calculate stopping criteria
@@ -131,22 +135,68 @@ class RobotHandler():
     def _callback(self, msg):
         self.ranges = msg.ranges
 
-        window_size = 4
-        threshold = 0.25
-        front = [0, 0+window_size/2, 360-window_size/2, 360]
-        front_right = [45-window_size/2, 45+window_size/2]
-        front_left = [315-window_size/2, 315+window_size/2]
+        window_size = 5
+        threshold = self.threshold
 
-        if np.mean(self.ranges[front[0]:front[1]] + self.ranges[front[2]:front[3]]) <= threshold or \
-                np.mean(self.ranges[front_right[0]:front_right[1]]) < threshold or \
-                np.mean(self.ranges[front_left[0]:front_left[1]]) < threshold:
-            self.state = "Obstacle"
-            if np.mean(self.ranges[front_right[0]:front_right[1]]) < threshold:
-                self.rotation_sense = 'anticlockwise'
-            elif np.mean(self.ranges[front_left[0]:front_left[1]]) < threshold:
-                self.rotation_sense = 'clockwise'
+        front = []
+        front_right = []
+        front_left = []
+
+        for i in range(-10, 10, window_size):
+            front.append(self.average_distance(self.ranges, i, window_size))
+        for i in range(-45, -10, window_size):
+            front_right.append(self.average_distance(self.ranges, i, window_size))
+        for i in range(10, 45, window_size):
+            front_left.append(self.average_distance(self.ranges, i, window_size))
+
+        obstacle_range = []
+        for i in range(-45, 45, window_size):
+            obstacle_range.append(self.average_distance(self.ranges, i, window_size))
+
+        if self._check_if_wall():
+            self.state = "Wall Following"
+            rospy.loginfo("Wall Following")
+
+        if any(distance <= threshold for distance in obstacle_range):
+
+            if self._check_if_wall():
+                self.state = "Wall Following"
+                rospy.loginfo("Wall Following")
+            else:
+                self.state = "Obstacle"
+                rospy.loginfo("Obstacle")
+                if any(distance <= threshold for distance in front_right):
+                    self.rotation_sense, self.previous_rotation_sense = 'anticlockwise', 'anticlockwise'
+                elif any(distance <= threshold for distance in front_left):
+                    self.rotation_sense, self.previous_rotation_sense = 'clockwise', 'clockwise'
+                else:
+                    self.rotation_sense = self.previous_rotation_sense
         else:
             self.state = "Random_walk"
+
+    def _check_if_wall(self):
+
+        obstacle_range = []
+        window_size = 5
+        for i in range(-45, 45, window_size):
+            obstacle_range.append(self.average_distance(self.ranges, i, window_size))
+
+        # Get the distance to the right (270) and 45 degrees above that (315)
+        a = np.mean(self.ranges[315])
+        b = np.mean(self.ranges[270])
+        # If there is a wall to the right, the angle should be 90 degrees and the other two 45 degrees
+        # the value of a can be calculated as b / sin(B) where B is the angle opposite to b (45 degrees)
+        calc_a = b / np.sin(math.pi / 4)
+        # Checks that a and the calculated a are similar and we are close to the wall
+        # and that we are not too close to any obstacle
+        if abs(calc_a - a) < 0.05 and b < self.threshold \
+                and b >= 0.2 and not any(
+            distance <= 0.15 for distance in obstacle_range):  # and that we are not too close to any obstacle
+            is_wall = True
+        else:
+            is_wall = False
+
+        return is_wall
 
     def _odom_callback(self, msg):
         # Get (x, y, theta) specification from odometry topic
