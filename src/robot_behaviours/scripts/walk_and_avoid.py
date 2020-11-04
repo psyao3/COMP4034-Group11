@@ -72,8 +72,8 @@ class robot_behaviours:
         # Get the average distance to obstacles around the turtlebot in specified ranges (in x degree segments)
         # Observes a frontal cone in front of the turtlebot e.g (90 -> 0 -> 270)
         # TODO: fix overlap between different ranges
-        for i in range(-60, 60, 8):
-            obst_dists.append(self.average_distance(ranges, i, 10))
+        for i in range(-45, 45, 8):
+            obst_dists.append(self.average_distance(ranges, i, 8))
 
         # Check obst_dists list to check if any are closer than 0.25
         # Returns true if any values are <= 0.25, indicating a close obstacle.
@@ -81,8 +81,8 @@ class robot_behaviours:
         #print(len(obst_dists))
         #threshold = 0.25
         right_obst = min(obst_dists[0:5])
-        front_obst = min(obst_dists[5:8])
-        left_obst = min(obst_dists[8:])
+        front_obst = min(obst_dists[5:7])
+        left_obst = min(obst_dists[7:])
 
         
         twist_msg = Twist()
@@ -90,12 +90,12 @@ class robot_behaviours:
         # Note: positive angular speed is anticlockwise,
         #       negative is clockwise.
         # Left side 
-        if left_obst <= 0.25:
+        if left_obst <= 0.5:
             rospy.loginfo("Obstacle left; Turning clockwise")
             twist_msg.angular.z = -self.angular_speed
             is_obstacle = True
         # Right side
-        elif right_obst <= 0.25:
+        elif right_obst <= 0.5:
             rospy.loginfo("Obstacle right; Turning anticlockwise")
             twist_msg.angular.z = self.angular_speed
             is_obstacle = True
@@ -132,7 +132,7 @@ class robot_behaviours:
             #rospy.loginfo("Behaviour: Random walk")
             twist_msg = self.random_walk(ranges, min(front_obst, left_obst, right_obst))
                
-        # Remove later000000
+       
         self.pub.publish(twist_msg)
        
         # Sleep according to the rate
