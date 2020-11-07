@@ -48,6 +48,9 @@ class Follower:
          # If there is only one label, then there is only background;
          # No object to beacon towards, so exit early. Need other behaviour
          # to move until an object comes into view.
+         cv2.imshow("Mask", mask)
+         cv2.imshow("Masked image", cv2.bitwise_and(hsv,hsv, mask=mask))
+         cv2.waitKey(3)
          return
 
       # Now the mask only contains the largest target.
