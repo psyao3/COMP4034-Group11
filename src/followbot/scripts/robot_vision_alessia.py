@@ -108,7 +108,7 @@ class Follower:
 
         num_targets, labels, stats, centroids = cv2.connectedComponentsWithStats(mask)
 
-        if num_targets > 1:
+        if num_targets > 1 and self.closest_obstacle >= 0.5:
             # If there is more than one label, find the closest target and move towards it
             rospy.loginfo("Target(s) in sight.")
             self.state = 'Target'
@@ -150,7 +150,7 @@ class Follower:
             # Implement a proportional controller to beacon towards it
             err = obj_centroid - w / 2
             twist_msg.linear.x = self.linear_speed
-            twist_msg.angular.z = -float(err) / 100
+            twist_msg.angular.z = -float(err) / 400
 
             self.pub.publish(twist_msg)
         else:

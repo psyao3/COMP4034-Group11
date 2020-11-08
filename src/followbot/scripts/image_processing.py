@@ -34,6 +34,7 @@ def find_largest_target(num_targets, stats):
             largest_target = i
     return largest_target
 
+
 def find_closest_centroid(num_targets, centroids, w):
     # Keep only the label that belongs to the object
     # whose centroid is closest to the center of the
