@@ -34,6 +34,17 @@ def find_largest_target(num_targets, stats):
             largest_target = i
     return largest_target
 
+def find_closest_centroid(num_targets, centroids, w):
+    # Keep only the label that belongs to the object
+    # whose centroid is closest to the center of the
+    # robots vision, i.e, beacon towards current target
+    # if there are multiple objects.
+    x_centroids = centroids[1:,0]
+    min_index = np.argmin(abs(x_centroids - w/2))
+    best_label = min_index + 1
+
+    return best_label
+
 
 def show_image(mask, masked_image):
     # Show current image

@@ -10,7 +10,7 @@ import math
 import random
 import tf
 from calculator import calculate_linear_distance, calculate_angular_distance, average_distance
-from image_processing import generate_mask, convert_to_hsv, find_largest_target, show_image
+from image_processing import generate_mask, convert_to_hsv, find_largest_target, show_image, find_closest_centroid
 #from calculator import *
 #from image_processing import *
 
@@ -128,8 +128,13 @@ class Follower:
             # If there are multiple green objects/targets, only follow one.
             # Remove the one further away from the image.
 
+            # Need Image width to get centroid of turtlebots view.
+            _, w, _ = hsv.shape
+            twist_msg = Twist()
+
             # Iterate over targets, keep largest one.
-            largest_target = find_largest_target(num_targets, stats)
+            #largest_target = find_largest_target(num_targets, stats)
+            largest_target = find_closest_centroid(num_targets, centroids, w)
 
             # Keep only largest_target, remove others from image.
             mask = np.where(targets == largest_target, np.uint8(255), np.uint8(0))
@@ -141,10 +146,6 @@ class Follower:
 
             # Show current image
             show_image(mask=mask, masked_image=target)
-
-            # Need Image width to get centroid of turtlebots view.
-            _, w, _ = target.shape
-            twist_msg = Twist()
 
             # Implement a proportional controller to beacon towards it
             err = obj_centroid - w / 2
