@@ -35,7 +35,7 @@ def find_largest_target(num_targets, stats):
     return largest_target
 
 
-def find_closest_centroid(num_targets, centroids, w):
+def find_closest_centroid(centroids, w):
     # Keep only the label that belongs to the object
     # whose centroid is closest to the center of the
     # robots vision, i.e, beacon towards current target

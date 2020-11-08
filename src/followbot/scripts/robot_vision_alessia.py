@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 import rospy
 from sensor_msgs.msg import Image
 from geometry_msgs.msg import Twist, Pose2D
@@ -11,8 +12,6 @@ import random
 import tf
 from calculator import calculate_linear_distance, calculate_angular_distance, average_distance
 from image_processing import generate_mask, convert_to_hsv, find_largest_target, show_image, find_closest_centroid
-#from calculator import *
-#from image_processing import *
 
 
 class Follower:
@@ -21,10 +20,10 @@ class Follower:
 
         # Initialising rospy behaviour
         rospy.on_shutdown(self.stop)
-        self.rate = rospy.Rate(10) # hz
+        self.rate = rospy.Rate(10)  # Hz
 
         # Speeds to use
-        self.linear_speed = 0.2
+        self.linear_speed = 0.4
         self.angular_speed = 0.4
 
         # Publishers and Subscribers
@@ -56,9 +55,9 @@ class Follower:
 
     def odom_callback(self, msg):
         # Get (x, y, theta) specification from odometry topic
-        quarternion = [msg.pose.pose.orientation.x,msg.pose.pose.orientation.y,\
-                    msg.pose.pose.orientation.z, msg.pose.pose.orientation.w]
-        (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(quarternion)
+        quaternion = [msg.pose.pose.orientation.x, msg.pose.pose.orientation.y,
+                      msg.pose.pose.orientation.z, msg.pose.pose.orientation.w]
+        (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(quaternion)
 
         self.pose.theta = yaw
         self.pose.x = msg.pose.pose.position.x
@@ -106,13 +105,16 @@ class Follower:
 
         mask = generate_mask(hsv)
 
+        target = cv2.bitwise_and(hsv, hsv, mask=mask)
+        show_image(mask=mask, masked_image=target)
+
         num_targets, labels, stats, centroids = cv2.connectedComponentsWithStats(mask)
 
-        if num_targets > 1 and self.closest_obstacle >= 0.5:
+        if self.closest_obstacle >= 0.5 and num_targets > 1:
             # If there is more than one label, find the closest target and move towards it
             rospy.loginfo("Target(s) in sight.")
             self.state = 'Target'
-            self.beacon_towards_closest_target(centroids, hsv, num_targets, stats, labels)
+            self.beacon_towards_closest_target(centroids, hsv, labels)
         elif self.closest_obstacle >= 0.5:
             # If there is only one label, then there is only background; Initiate Random Walk
             rospy.loginfo("No targets  - Random Walk.")
@@ -123,18 +125,17 @@ class Follower:
             # Wait until the obstacle is avoided
             return
 
-    def beacon_towards_closest_target(self, centroids, hsv, num_targets, stats, targets):
+    def beacon_towards_closest_target(self, centroids, hsv, targets):
         if self.state == 'Target' and not rospy.is_shutdown():
             # If there are multiple green objects/targets, only follow one.
             # Remove the one further away from the image.
 
-            # Need Image width to get centroid of turtlebots view.
+            # Need Image width to get centroid of turtlebot's view.
             _, w, _ = hsv.shape
             twist_msg = Twist()
 
             # Iterate over targets, keep largest one.
-            #largest_target = find_largest_target(num_targets, stats)
-            largest_target = find_closest_centroid(num_targets, centroids, w)
+            largest_target = find_closest_centroid(centroids, w)
 
             # Keep only largest_target, remove others from image.
             mask = np.where(targets == largest_target, np.uint8(255), np.uint8(0))
@@ -143,9 +144,6 @@ class Follower:
             # Now the mask only contains the largest target.
             # Can use the centroids already provided from connectedComponents
             target = cv2.bitwise_and(hsv, hsv, mask=mask)
-
-            # Show current image
-            show_image(mask=mask, masked_image=target)
 
             # Implement a proportional controller to beacon towards it
             err = obj_centroid - w / 2
@@ -163,6 +161,7 @@ class Follower:
             if self.beginning_of_random_walk:
                 rospy.loginfo("Begin Random Walk")
                 self.initial_pose = Pose2D(self.pose.x, self.pose.y, self.pose.theta)
+                self.random_angle = random.uniform(-math.pi, math.pi)
                 while abs(self.random_angle) < 1:
                     self.random_angle = random.uniform(-math.pi, math.pi)
                 self.beginning_of_random_walk = False
@@ -179,11 +178,11 @@ class Follower:
             n_of_meters = 3
 
             if calculate_linear_distance(self.initial_pose, self.pose) < n_of_meters:
-                rospy.loginfo("Walked %3f m out of %i m" % (
+                rospy.loginfo("Walked %.2f m out of %i m" % (
                     calculate_linear_distance(self.initial_pose, self.pose), n_of_meters))
                 twist_msg.linear.x = min(self.linear_speed * self.closest_obstacle, self.linear_speed)
             elif calculate_angular_distance(self.initial_pose, self.pose) < self.random_angle:
-                rospy.loginfo("Turned %3f radians out of %3f" % (
+                rospy.loginfo("Turned %.3f radians out of %.2f" % (
                     calculate_angular_distance(self.initial_pose, self.pose), self.random_angle))
                 twist_msg.angular.z = self.angular_speed
             else:
