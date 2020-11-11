@@ -11,7 +11,7 @@ import math
 import random
 import tf
 from calculator import calculate_linear_distance, calculate_angular_distance, average_distance
-from image_processing import generate_mask, convert_to_hsv, find_largest_target, show_image, find_closest_centroid
+from image_processing import generate_mask, convert_to_hsv, show_image, find_closest_centroid
 
 
 class Follower:
@@ -87,20 +87,23 @@ class Follower:
         target = cv2.bitwise_and(hsv, hsv, mask=mask)
         show_image(mask=mask, masked_image=target)
 
+        # Label objects in image (0 is background), matrix of labels and stats
         num_targets, labels, stats, centroids = cv2.connectedComponentsWithStats(mask)
 
         threshold = 0.5
 
+        # If theres an obstacle closer than threshold do obstacle avoidance
         if self.closest_obstacle <= threshold:
             twist_msg = Twist()
 
-            if self.left_obst <= threshold and self.right_obst:
-                rospy.loginfo("Obstacle left; Turning clockwise")
+            if self.left_obst <= threshold and self.right_obst <= threshold:
+                rospy.loginfo("Obstacle left and right; Turning 90 degrees")
                 self.state = 'Obstacle'
                 twist_msg.angular.z = math.pi/3
                 self.pub.publish(twist_msg)
                 self.beginning_of_random_walk = True
-                rospy.sleep(3)
+                rospy.sleep(1.5)
+                # 90 degrees
             elif self.left_obst <= threshold:
                 rospy.loginfo("Obstacle left; Turning clockwise")
                 self.state = 'Obstacle'
@@ -120,12 +123,14 @@ class Follower:
                 self.pub.publish(twist_msg)
                 self.beginning_of_random_walk = True
 
+        # If no obstacle but at least one target beacon towards
         elif num_targets > 1:
             # If there is more than one label, find the closest target and move towards it
             rospy.loginfo("Target(s) in sight.")
             self.state = 'Target'
             self.beacon_towards_closest_target(centroids, hsv, labels)
 
+        # Else random walk
         else:
             # If there is only one label, then there is only background; Initiate Random Walk
             rospy.loginfo("No targets  - Random Walk.")
@@ -145,12 +150,8 @@ class Follower:
             largest_target = find_closest_centroid(centroids, w)
 
             # Keep only largest_target, remove others from image.
-            mask = np.where(targets == largest_target, np.uint8(255), np.uint8(0))
+            #mask = np.where(targets == largest_target, np.uint8(255), np.uint8(0))
             obj_centroid = centroids[largest_target, 0]
-
-            # Now the mask only contains the largest target.
-            # Can use the centroids already provided from connectedComponents
-            target = cv2.bitwise_and(hsv, hsv, mask=mask)
 
             # Implement a proportional controller to beacon towards it
             err = obj_centroid - w / 2
