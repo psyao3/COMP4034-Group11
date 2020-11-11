@@ -7,8 +7,9 @@ import cv2
 def generate_mask(hsv):
     # Colour slicing to identify green objects
     # Colour of green object is [60, 159, 82]
-    lower_green = np.array([50, 140, 75])
-    upper_green = np.array([70, 170, 100])
+    lower_green = np.array([40, 139, 62])
+    upper_green = np.array([80, 179, 102])
+    # Range of green values to account for shade differences
     mask = cv2.inRange(hsv, lower_green, upper_green)
     return mask
 
@@ -24,22 +25,12 @@ def convert_to_hsv(msg, bridge):
     return hsv
 
 
-def find_largest_target(num_targets, stats):
-    best_target = 0
-    largest_target = 0
-    for i in range(1, num_targets):
-        area = stats[i, cv2.CC_STAT_AREA]
-        if area >= best_target:
-            best_target = area
-            largest_target = i
-    return largest_target
-
-
 def find_closest_centroid(centroids, w):
     # Keep only the label that belongs to the object
     # whose centroid is closest to the center of the
     # robots vision, i.e, beacon towards current target
     # if there are multiple objects.
+    # Matrix of x,y centroids, start at 1 to ignore background
     x_centroids = centroids[1:,0]
     min_index = np.argmin(abs(x_centroids - w/2))
     best_label = min_index + 1
