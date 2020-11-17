@@ -16,6 +16,7 @@ import actionlib
 from actionlib_msgs.msg import *
 from geometry_msgs.msg import Point
 import random
+import grid_methods as grid
 
 # note to self make sure the navigation file is running
 # roslaunch turtlebot3_navigation turtlebot3_navigation.launch map_file:=`rospack find minitask4`/maps/mymap.yaml
@@ -24,38 +25,33 @@ class Waypoints:
 
     def __init__(self):
 
-        #only have coordinates set up for 4 rooms at the moment
-        self.rooms = []
-        
-        room1 =  Point(4.6,0.8,0)
-        self.rooms.append(room1)
+        # Rooms 1 to 6. Found using rostopic echo /amcl_pose, and setting the 2d Pose
+        # estimate in RViz to locations of interest (each room).
+        self.rooms = [Point(4.6,0.8,0),
+                      Point(5.9,-4.5,0),
+                      Point(1.1,3.8,0),
+                      Point(-3.3,4.2,0),
+                      Point(-5.5, 4.78, 0),
+                      Point(-5.74, -3.13, 0)]
 
-        room2 =  Point(5.9,-4.5,0)
-        self.rooms.append(room2)
 
-        room3 =  Point(1.1,3.8,0)
-        self.rooms.append(room3)
- 
-        room4 =  Point(-3.3,4.2,0)
-        self.rooms.append(room4)
-
-        counter = -1
 
         while not rospy.is_shutdown():
 
-            #find the next waypoint to move to
-            if counter+1 == len(self.rooms):
-                counter = -1
-            counter+=1
+            # Lists evaluate to false if empty, so this will run when finished.
+            if not self.rooms:
+                rospy.loginfo("Visited all destinations.")
+                rospy.signal_shutdown("Finished!")
+            # Pop the next target from the list.
+            else:        
+                self.move_to_target(self.rooms.pop(0))
 
-            rospy.loginfo("counter = " + str(counter))
-        
-            self.move_to_target(self.rooms[counter])
-
-    
+   
 
 
     def move_to_target(self, coordinates):
+        # Create a client to send goal requests to the move_base server through
+        # a SimpleActionClient
         client = actionlib.SimpleActionClient('move_base',MoveBaseAction)
 
         while not client.wait_for_server(rospy.Duration.from_sec(5.0)):
@@ -75,16 +71,14 @@ class Waypoints:
         goal.target_pose.pose.orientation.z = 0.0
         goal.target_pose.pose.orientation.w = 1.0
 
-        rospy.loginfo("sending goal location")
+        rospy.loginfo("Sending goal location")
         client.send_goal(goal)
 
-        wait = client.wait_for_result(rospy.Duration(60))
+        client.wait_for_result(rospy.Duration(60))
 
         
         if(client.get_state() ==  GoalStatus.SUCCEEDED):
             rospy.loginfo("You have reached the destination")
-            
-
         else:
             rospy.loginfo("The robot failed to reach the destination")
             
