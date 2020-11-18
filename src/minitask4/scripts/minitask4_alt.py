@@ -39,8 +39,12 @@ class Waypoints:
         self.pose = Pose2D()
         self.sub = rospy.Subscriber('/odom', Odometry, self._odom_callback)
 
+        # Count number of grid squares visited.
+        self.visit_count = 0
+
         # Initialize occupancy grid; -1 means unknown/unvisited
         # Length is size_x * size_y (variable imported from grid_methods)
+        # So for this map, 20 * 20, 400 grid squares total.
         self.occ_grid = np.full(np.product(grid.size), -1)
 
 
@@ -51,8 +55,15 @@ class Waypoints:
                 rospy.loginfo("Visited all destinations.")
                 rospy.signal_shutdown("Finished!")
             # Pop the next target from the list.
-            else:        
-                self.move_to_target(self.rooms.pop(0))
+            else: 
+                target = self.rooms.pop(0)
+
+                # Keep trying until target is reached
+                while not self.move_to_target(target):
+                    rospy.loginfo("Trying again.")
+
+
+                    
 
    
 
@@ -87,8 +98,10 @@ class Waypoints:
         
         if(client.get_state() ==  GoalStatus.SUCCEEDED):
             rospy.loginfo("You have reached the destination")
+            return True
         else:
             rospy.loginfo("The robot failed to reach the destination")
+            return False
             
 
     def _odom_callback(self, msg):
@@ -112,7 +125,12 @@ class Waypoints:
         #print index
 
         # 0 indicates a grid square has been visited.
-        self.occ_grid[index] = 0  
+        if self.occ_grid[index] == -1:
+            self.occ_grid[index] = 0
+            self.visit_count += 1
+            rospy.loginfo("Visited a new grid square [%i, %i]; %i in total."
+                            % (g_xy[0], g_xy[1], self.visit_count))  
+
 
         # TODO: Could work out proportion of grid visited and print updates. 
 
