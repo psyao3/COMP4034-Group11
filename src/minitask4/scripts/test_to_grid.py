@@ -3,7 +3,7 @@
 import grid_methods as grid
 
 
-interactive = False
+interactive = True
 
 
 def interactive_test_to_grid():
@@ -14,9 +14,9 @@ def interactive_test_to_grid():
     size = input("Insert parameter: size...\n")
     resolution = input("Insert parameter: resolution...\n")
 
-    p_xy = [float(value) for value in p_xy.split(',')]
-    origin = [float(value) for value in origin.split(',')]
-    size = [float(value) for value in size.split(',')]
+    p_xy = [float(value) for value in p_xy]
+    origin = [float(value) for value in origin]
+    size = [float(value) for value in size]
     resolution = float(resolution)
 
     print("\nResult:")
@@ -28,9 +28,10 @@ def static_test_to_grid():
     # Using examples from github
     test_values = [
         [[5,5], [0,0],   [20,20], 1, [5, 5]],
-        [[5, 5], [0, 0], [20, 20], 1, [10,10]],
+        [[5, 5], [0, 0], [20, 20], 1, [10, 10]],
         [[5, 5], [0, 0], [20, 20], 1, [5, 5]],
         [[5, 5], [0, 0], [20, 20], 1, [4.5, 4.5]],
+        [[10000, 10000], [0, 0], [20, 20], 1, "Error"]
     ]
 
     for value in test_values:
