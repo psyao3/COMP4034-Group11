@@ -27,16 +27,17 @@ def static_test_to_grid():
 
     # Using examples from github
     test_values = [
-        [[5,5], [0,0],   [20,20], 1, (5, 5)],
-        [[5, 5], [0, 0], [20, 20], 1, (10,10)],
-        [[5, 5], [0, 0], [20, 20], 1, (5, 5)],
-        [[5, 5], [0, 0], [20, 20], 1, (4.5, 4.5)],
+        [[5,5], [0,0],   [20,20], 1, [5, 5]],
+        [[5, 5], [0, 0], [20, 20], 1, [10,10]],
+        [[5, 5], [0, 0], [20, 20], 1, [5, 5]],
+        [[5, 5], [0, 0], [20, 20], 1, [4.5, 4.5]],
     ]
 
     for value in test_values:
 
-        print(f'\nShould return {value[4]}')
-        print(grid.to_grid(value[0], value[1], value[2], value[3]))
+        print('\nTesting: p-xy: {}, origin: {}, size: {}, resolution: {}'.format(value[0], value[1], value[2], value[3]))
+        print('Should return {}'.format(value[4]))
+        print('Result: {}'.format(grid.to_grid(value[0], value[1], value[2], value[3])))
 
 
 if __name__ == "__main__":
