@@ -1,19 +1,26 @@
 #!/usr/bin/env python
 
+import matplotlib
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
+
 import rospy
 from geometry_msgs.msg import Twist, Pose2D, Point
 from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import Odometry, OccupancyGrid
+
 import numpy as np
 import math
 import random
 import tf
+import time
 
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 import actionlib
 from actionlib_msgs.msg import *
 
 import grid_methods as grid
+
 
 # note to self make sure the navigation file is running
 # roslaunch turtlebot3_navigation turtlebot3_navigation.launch map_file:=`rospack find minitask4`/maps/mymap.yaml
@@ -46,6 +53,14 @@ class Waypoints:
         # So for this map, 20 * 20, 400 grid squares total.
         self.occ_grid = np.full(np.product(grid.size), -1)
 
+        # Plot the occupancy grid
+        self.fig = plt.figure()
+        self.axis = self.fig.add_subplot(111)
+        self.win = self.fig.canvas.manager.window
+        self.win.after(100, self.plot_occupancy_grid)
+        self.fig.canvas.draw()
+        plt.show(block=False)
+
         while not rospy.is_shutdown():
 
             # Lists evaluate to false if empty, so this will run when finished.
@@ -60,16 +75,32 @@ class Waypoints:
                 while not self.move_to_target(target):
                     rospy.loginfo("Trying again.")
 
+    def plot_occupancy_grid(self):
 
-                    
+        # Give time to initialise class attributes
+        time.sleep(2)
 
-   
+        # Defines the colors
+        cmap = matplotlib.colors.ListedColormap(['blue', 'white'])
 
+        # Creates a normalize object with the limits of each color - 0/1
+        bounds = [0., 0.5, 1.]
+        norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
+
+        #self.axis.clear()
+        plt.cla()
+
+        # Plot
+        self.axis.imshow(self.occ_grid.reshape(grid.size[0], grid.size[1]), interpolation='none', cmap=cmap, norm=norm)
+        self.fig.canvas.draw()
+
+        # Update after 100ms
+        self.win.after(100, self.plot_occupancy_grid)
 
     def move_to_target(self, coordinates):
         # Create a client to send goal requests to the move_base server through
         # a SimpleActionClient
-        client = actionlib.SimpleActionClient('move_base',MoveBaseAction)
+        client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
 
         while not client.wait_for_server(rospy.Duration.from_sec(5.0)):
             rospy.loginfo("Waiting for the move_base action server")
@@ -82,7 +113,7 @@ class Waypoints:
         goal.target_pose.header.stamp = rospy.Time.now()
 
         #set positions of the goal location
-        goal.target_pose.pose.position =  coordinates
+        goal.target_pose.pose.position = coordinates
         goal.target_pose.pose.orientation.x = 0.0
         goal.target_pose.pose.orientation.y = 0.0
         goal.target_pose.pose.orientation.z = 0.0
@@ -94,7 +125,7 @@ class Waypoints:
         client.wait_for_result(rospy.Duration(60))
 
         
-        if(client.get_state() ==  GoalStatus.SUCCEEDED):
+        if (client.get_state() ==  GoalStatus.SUCCEEDED):
             rospy.loginfo("You have reached the destination")
             return True
         else:
@@ -118,20 +149,20 @@ class Waypoints:
         # Set current grid position on occ_grid to visited
         index = grid.to_index(g_xy[0], g_xy[1], grid.size[0])
 
-        # Debug:
-        #print g_xy
-        #print index
 
         # 0 indicates a grid square has been visited.
         if self.occ_grid[index] == -1:
             self.occ_grid[index] = 0
             self.visit_count += 1
-            rospy.loginfo("Visited a new grid square [%i, %i]; %i in total."
-                            % (g_xy[0], g_xy[1], self.visit_count))  
+            total_grid_cells = grid.size[0]*grid.size[1]
 
-
-        # TODO: Could work out proportion of grid visited and print updates. 
-
+            rospy.loginfo("Visited a new grid square [%i, %i]." % (g_xy[0], g_xy[1]))
+            rospy.loginfo("Visited %i squares - %.1f %% of total."
+                          % (self.visit_count, float(self.visit_count)/float(total_grid_cells)*100))
+            # Print 1d grid
+            print("\n\n")
+            print(self.occ_grid.reshape(20,20))
+            print("\n\n")
 
 
 if __name__ == '__main__':
@@ -142,3 +173,7 @@ if __name__ == '__main__':
     except rospy.ROSInterruptException as e:
         print("An exception was caught.")
         raise e
+    except KeyboardInterrupt:
+        print("Program terminated.")
+        exit()
+

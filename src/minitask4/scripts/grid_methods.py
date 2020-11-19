@@ -27,6 +27,7 @@ def to_grid(p_xy, origin_, size, resolution):
     if g_xy[0] >= size[0] or g_xy[1] >= size[0] or g_xy[0] < 0 or g_xy[1] < 0:
         # raise ValueError("Exceeding grid size.")
         print('ValueError: Exceeding grid size.')
+        g_xy = None
 
     return g_xy
 
@@ -34,9 +35,18 @@ def to_grid(p_xy, origin_, size, resolution):
 def to_world(g_xy, origin, size, resolution):
     # Return [px, py], float values representing the center of the grid cell in
     # world co-ordinates.
-    
+
+    resolution = float(resolution)  # To prevent conversion to int when dividing by resolution
+
     # Resolution needs to be a float here
     p_xy = [(((a + b) * resolution) + resolution/2) for a, b in zip(g_xy, origin)]
+
+    # If statements for exceeding 20x20 bounds, raise/print ValueError
+    if g_xy[0] >= size[0] or g_xy[1] >= size[0] or g_xy[0] < 0 or g_xy[1] < 0:
+        # raise ValueError("Exceeding grid size.")
+        print('ValueError: Exceeding grid size.')
+        p_xy = None
+
     return p_xy
 
 
