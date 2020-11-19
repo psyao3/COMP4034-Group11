@@ -19,7 +19,6 @@ import grid_methods as grid
 # roslaunch turtlebot3_navigation turtlebot3_navigation.launch map_file:=`rospack find minitask4`/maps/mymap.yaml
 
 
-
 class Waypoints:
 
     def __init__(self):
@@ -28,10 +27,10 @@ class Waypoints:
 
         # Rooms 1 to 6. Found using rostopic echo /amcl_pose, and setting the 2d Pose
         # estimate in RViz to locations of interest (each room).
-        self.rooms = [Point(4.6,0.8,0),
-                      Point(5.9,-4.5,0),
-                      Point(1.1,3.8,0),
-                      Point(-3.3,4.2,0),
+        self.rooms = [Point(4.6, 0.8, 0),
+                      Point(5.9, -4.5, 0),
+                      Point(1.1, 3.8, 0),
+                      Point(-3.3, 4.2, 0),
                       Point(-5.5, 4.78, 0),
                       Point(-5.74, -3.13, 0)]
 
@@ -46,7 +45,6 @@ class Waypoints:
         # Length is size_x * size_y (variable imported from grid_methods)
         # So for this map, 20 * 20, 400 grid squares total.
         self.occ_grid = np.full(np.product(grid.size), -1)
-
 
         while not rospy.is_shutdown():
 

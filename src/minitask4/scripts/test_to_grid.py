@@ -3,7 +3,7 @@
 import grid_methods as grid
 
 
-interactive = True
+interactive = False
 
 
 def interactive_test_to_grid():
@@ -27,16 +27,20 @@ def static_test_to_grid():
 
     # Using examples from github
     test_values = [
-        [[5,5], [0,0],   [20,20], 1, [5, 5]],
+        # p_xy | origin | size | resolution
+        [[5, 5], [0, 0], [20, 20], 1, [5, 5]],
         [[5, 5], [0, 0], [20, 20], 1, [10, 10]],
         [[5, 5], [0, 0], [20, 20], 1, [5, 5]],
         [[5, 5], [0, 0], [20, 20], 1, [4.5, 4.5]],
-        [[10000, 10000], [0, 0], [20, 20], 1, "Error"]
+        [[10000, 0], [0, 0], [20, 20], 1, "Error"],
+        [[5, 10000], [0, 0], [20, 20], 1, "Error"],
+        [[-20, 5], [0, 0], [20, 20], 1, "Error"],
+        [[5, -1], [0, 0], [20, 20], 1, "Error"]
     ]
 
     for value in test_values:
 
-        print('\nTesting: p-xy: {}, origin: {}, size: {}, resolution: {}'.format(value[0], value[1], value[2], value[3]))
+        print('\nTesting: p_xy: {}, origin: {}, size: {}, resolution: {}'.format(value[0], value[1], value[2], value[3]))
         print('Should return {}'.format(value[4]))
         print('Result: {}'.format(grid.to_grid(value[0], value[1], value[2], value[3])))
 
