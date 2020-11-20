@@ -116,8 +116,12 @@ class Waypoints:
             rospy.loginfo("Visited %i squares - %.1f %% of total."
                           % (self.visit_count, float(self.visit_count)/float(total_grid_cells)*100))
             # Print 1d grid
-            print("\n\n")
-            print(np.flip(self.occ_grid.reshape(grid.size[0], grid.size[1]), axis=0))
+            print "\n\n"
+
+            for line in self.occ_grid.reshape(20,20):
+                values = [' X ' if val == 0 else ' - ' for val in line]
+                print ''.join(values)
+
             print("\n\n")
 
 

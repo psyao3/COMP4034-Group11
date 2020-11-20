@@ -52,7 +52,8 @@ def to_world(g_xy, origin, size, resolution):
 
 # Convert grid coordinate to map index; size_x is expected to be size[0]
 def to_index(gx, gy, size_x):
-    return gy * size_x + gx
+
+    return 399- (gy * size_x - gx)
 
 
 
