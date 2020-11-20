@@ -54,7 +54,7 @@ Should return [4.5, 4.5]
 Result: [4.5, 4.5]
 
 Testing: g_xy: [4.5, 4.5], origin: [0, 0], size: [20, 20], resolution: 1
-Should return [9, 9]
+Should return [5.0, 5.0]
 Result: [5.0, 5.0]
 
 Testing: g_xy: [4, 8], origin: [0, 0], size: [20, 10], resolution: 1
