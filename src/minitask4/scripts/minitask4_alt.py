@@ -1,24 +1,15 @@
 #!/usr/bin/env python
 
-import matplotlib
-matplotlib.use('TkAgg')
-import matplotlib.pyplot as plt
-
 import rospy
-from geometry_msgs.msg import Twist, Pose2D, Point
-from sensor_msgs.msg import LaserScan
-from nav_msgs.msg import Odometry, OccupancyGrid
-
 import numpy as np
-import math
-import random
 import tf
-import time
 
+from geometry_msgs.msg import Twist, Pose2D, Point
+from nav_msgs.msg import Odometry, OccupancyGrid
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
-import actionlib
 from actionlib_msgs.msg import *
 
+import actionlib
 import grid_methods as grid
 
 
@@ -29,8 +20,6 @@ import grid_methods as grid
 class Waypoints:
 
     def __init__(self):
-
-        # TODO: add automatic 2d Pose estimate here?
 
         # Rooms 1 to 6. Found using rostopic echo /amcl_pose, and setting the 2d Pose
         # estimate in RViz to locations of interest (each room).
@@ -53,14 +42,6 @@ class Waypoints:
         # So for this map, 20 * 20, 400 grid squares total.
         self.occ_grid = np.full(np.product(grid.size), -1)
 
-        # Plot the occupancy grid
-        self.fig = plt.figure()
-        self.axis = self.fig.add_subplot(111)
-        self.win = self.fig.canvas.manager.window
-        self.win.after(100, self.plot_occupancy_grid)
-        self.fig.canvas.draw()
-        plt.show(block=False)
-
         while not rospy.is_shutdown():
 
             # Lists evaluate to false if empty, so this will run when finished.
@@ -74,28 +55,6 @@ class Waypoints:
                 # Keep trying until target is reached
                 while not self.move_to_target(target):
                     rospy.loginfo("Trying again.")
-
-    def plot_occupancy_grid(self):
-
-        # Give time to initialise class attributes
-        time.sleep(2)
-
-        # Defines the colors
-        cmap = matplotlib.colors.ListedColormap(['blue', 'white'])
-
-        # Creates a normalize object with the limits of each color - 0/1
-        bounds = [0., 0.5, 1.]
-        norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
-
-        #self.axis.clear()
-        plt.cla()
-
-        # Plot
-        self.axis.imshow(self.occ_grid.reshape(grid.size[0], grid.size[1]), interpolation='none', cmap=cmap, norm=norm)
-        self.fig.canvas.draw()
-
-        # Update after 100ms
-        self.win.after(100, self.plot_occupancy_grid)
 
     def move_to_target(self, coordinates):
         # Create a client to send goal requests to the move_base server through
@@ -123,7 +82,6 @@ class Waypoints:
         client.send_goal(goal)
 
         client.wait_for_result(rospy.Duration(60))
-
         
         if (client.get_state() ==  GoalStatus.SUCCEEDED):
             rospy.loginfo("You have reached the destination")
@@ -131,11 +89,10 @@ class Waypoints:
         else:
             rospy.loginfo("The robot failed to reach the destination")
             return False
-            
 
     def _odom_callback(self, msg):
         # Get (x, y, theta) specification from odometry topic
-        quarternion = [msg.pose.pose.orientation.x,msg.pose.pose.orientation.y,\
+        quarternion = [msg.pose.pose.orientation.x,msg.pose.pose.orientation.y, \
                     msg.pose.pose.orientation.z, msg.pose.pose.orientation.w]
         (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(quarternion)
 
@@ -149,7 +106,6 @@ class Waypoints:
         # Set current grid position on occ_grid to visited
         index = grid.to_index(g_xy[0], g_xy[1], grid.size[0])
 
-
         # 0 indicates a grid square has been visited.
         if self.occ_grid[index] == -1:
             self.occ_grid[index] = 0
@@ -161,7 +117,7 @@ class Waypoints:
                           % (self.visit_count, float(self.visit_count)/float(total_grid_cells)*100))
             # Print 1d grid
             print("\n\n")
-            print(self.occ_grid.reshape(20,20))
+            print(np.flip(self.occ_grid.reshape(grid.size[0], grid.size[1]), axis=0))
             print("\n\n")
 
 

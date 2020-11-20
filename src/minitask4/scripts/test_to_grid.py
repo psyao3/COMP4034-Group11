@@ -3,9 +3,6 @@
 import grid_methods as grid
 
 
-interactive = False
-
-
 def interactive_test_to_grid():
 
     print("\nTesting to_grid() function \n\n")
