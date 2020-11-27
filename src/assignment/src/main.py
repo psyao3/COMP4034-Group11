@@ -1,20 +1,23 @@
 #!/usr/bin/env python
 
 import rospy
-from sensor_msgs.msg import Image
-from geometry_msgs.msg import Twist, Pose2D
-from sensor_msgs.msg import LaserScan
-from nav_msgs.msg import Odometry
 import cv2, cv_bridge
 import numpy as np
 import math
 import random
 import tf
+import actionlib
 from calculator import calculate_linear_distance, calculate_angular_distance, average_distance
 from image_processing import generate_mask, convert_to_hsv, show_image, find_closest_centroid
+from sensor_msgs.msg import Image
+from geometry_msgs.msg import Twist, Pose2D
+from sensor_msgs.msg import LaserScan
+from nav_msgs.msg import Odometry
+from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+from actionlib_msgs.msg import *
 
 
-class Follower:
+class ObjectFinder:
 
     def __init__(self):
 
@@ -51,8 +54,56 @@ class Follower:
         self.closest_obstacle = None
         self.right_obst, self.front_obst, self.left_obst = None, None, None
 
+        # Obstacles and objects
+        self.obstacles = []
+        self.objects = []
+
+        while not rospy.is_shutdown():
+
+            if len(self.objects) != 0:
+                current_target = self.objects.pop(0)
+                while not self.move_to_target(current_target):
+                    rospy.loginfo("Trying again.")
+            else:
+                pass
+                # Search strategy
+
     def stop(self):
         self.pub.publish(Twist())
+
+    def move_to_target(self, coordinates):
+        # Create a client to send goal requests to the move_base server through
+        # a SimpleActionClient
+        client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
+
+        while not client.wait_for_server(rospy.Duration.from_sec(5.0)):
+            rospy.loginfo("Waiting for the move_base action server")
+
+        goal = MoveBaseGoal()
+
+        # important because "map" defines we are using map coordinates
+        # and not coordinates relative to the robot
+        goal.target_pose.header.frame_id = "map"
+        goal.target_pose.header.stamp = rospy.Time.now()
+
+        # set positions of the goal location
+        goal.target_pose.pose.position = coordinates
+        goal.target_pose.pose.orientation.x = 0.0
+        goal.target_pose.pose.orientation.y = 0.0
+        goal.target_pose.pose.orientation.z = 0.0
+        goal.target_pose.pose.orientation.w = 1.0
+
+        rospy.loginfo("Sending goal location")
+        client.send_goal(goal)
+
+        client.wait_for_result(rospy.Duration(60))
+
+        if (client.get_state() == GoalStatus.SUCCEEDED):
+            rospy.loginfo("You have reached the destination")
+            return True
+        else:
+            rospy.loginfo("The robot failed to reach the destination")
+            return False
 
     def odom_callback(self, msg):
         # Get (x, y, theta) specification from odometry topic
@@ -206,8 +257,8 @@ class Follower:
 
 if __name__ == '__main__':
     try:
-        rospy.init_node('follower')
-        follower = Follower()
+        rospy.init_node('object_finder')
+        object_finder = ObjectFinder()
         rospy.spin()
     except rospy.ROSInterruptException as e:
         print("An exception was caught.")
