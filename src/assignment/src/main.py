@@ -6,12 +6,15 @@ import numpy as np
 import math
 import random
 import tf
+import struct
+import ctypes
 import actionlib
+import grid_methods as grid
 from calculator import calculate_linear_distance, calculate_angular_distance, average_distance
 from image_processing import generate_mask, convert_to_hsv, show_image, find_closest_centroid
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import Image, PointCloud2, LaserScan
+from sensor_msgs import point_cloud2
 from geometry_msgs.msg import Twist, Pose2D
-from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import Odometry
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from actionlib_msgs.msg import *
@@ -33,6 +36,7 @@ class ObjectFinder:
         self.pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
 
         self.image_sub = rospy.Subscriber('camera/rgb/image_raw', Image, self.image_callback)
+        self.image_sub = rospy.Subscriber('camera/depth/points', PointCloud2, self.depth_callback)
         self.odom_sub = rospy.Subscriber('/odom', Odometry, self.odom_callback)
         self.scan_sub = rospy.Subscriber("/scan", LaserScan, self.scan_callback)
 
@@ -57,6 +61,16 @@ class ObjectFinder:
         # Obstacles and objects
         self.obstacles = []
         self.objects = []
+
+        # Count number of grid squares visited.
+        self.visit_count = 0
+
+
+        # Initialize occupancy grid; -1 means unknown/unvisited
+        # Length is size_x * size_y (variable imported from grid_methods)
+        # So for this map, 20 * 20, 400 grid squares total.
+        self.occ_grid = np.full(np.product(grid.size), -1)
+
 
         while not rospy.is_shutdown():
 
@@ -114,6 +128,29 @@ class ObjectFinder:
         self.pose.theta = yaw
         self.pose.x = msg.pose.pose.position.x
         self.pose.y = msg.pose.pose.position.y
+
+        # Get grid position
+        g_xy = grid.to_grid([self.pose.x, self.pose.y], grid.origin, grid.size, grid.resolution)
+
+
+        # Set current grid position on occ_grid to visited
+        index = grid.to_index(g_xy[0], g_xy[1], grid.size[0])
+
+
+        # 0 indicates a grid square has been visited.
+        if self.occ_grid[index] == -1:
+            self.occ_grid[index] = 0
+            self.visit_count += 1
+            total_grid_cells = grid.size[0]*grid.size[1]
+
+            rospy.loginfo("Visited a new grid square [%i, %i]." % (g_xy[0], g_xy[1]))
+            rospy.loginfo("Visited %i squares - %.1f %% of total."
+                          % (self.visit_count, float(self.visit_count)/float(total_grid_cells)*100))
+            # Print 1d grid
+            print("\n\n")
+            print(np.fliplr(self.occ_grid.reshape(grid.size[0], grid.size[1])))
+            print("\n\n")
+
 
     def scan_callback(self, msg):
         self.ranges = np.array(msg.ranges)
@@ -193,7 +230,7 @@ class ObjectFinder:
             # If there are multiple green objects/targets, only follow one.
             # Remove the one further away from the image.
 
-            # Need Image width to get centroid of turtlebot's view.
+            # Need Image width to get centroid of turtlebot's view.       
             _, w, _ = hsv.shape
             twist_msg = Twist()
 
@@ -212,6 +249,59 @@ class ObjectFinder:
             self.pub.publish(twist_msg)
         else:
             self.stop()
+
+    def depth_callback(self, data):
+
+        if self.state == 'Target' and not rospy.is_shutdown():
+        
+            # ignore non-numbers
+            generator = point_cloud2.read_points(data, skip_nans=True)
+            int_data = list(generator)
+
+            rospy.loginfo("point cloud")
+
+            current_max = []
+            tracker = 0
+            '''
+            ok, so my idea here is that the point cloud is able to give relative xyz values of the surrounding points from the depth scan
+            this temporary function just finds the greenest object in the view and updates grid with a number 2 
+            just as a temporary way to identify the object locations are correctly found
+
+            I will try and replace this 'find the greenest value' with something which identifies whether a point is a part of an object 
+            then update the grid or obstacles list with the position of the object maybe using the to_world method to add to the move_base
+
+            i've found this really hard to test at the moment though because its almost impossible to find a green treshold which doesnt get confused with the walls and bricks in certain areas
+            when specifically trying to find the green box
+            '''
+            for p in int_data:
+
+                rgb = p[3]  
+                   
+                
+                # cast float32 to int 
+                s = struct.pack('>f' ,rgb)
+                i = struct.unpack('>l',s)[0]
+
+                # extract the individaul rgb values from the float32
+                pack = ctypes.c_uint32(i).value
+                r = (pack & 0x00FF0000)>> 16
+                g = (pack & 0x0000FF00)>> 8
+                b = (pack & 0x000000FF)
+
+                # very temporary find greatest geeen value in the view
+                if g > tracker:
+                    current_max = p
+
+
+                    
+            #then convert the relative position to the grid based on robots odom values
+            g_xy = grid.to_grid([self.pose.x + current_max[0], self.pose.y + current_max[1]], grid.origin, grid.size, grid.resolution)
+            index = grid.to_index(g_xy[0], g_xy[1], grid.size[0])
+            self.occ_grid[index] = 2
+
+            rospy.loginfo("updated grid")
+       
+
 
     def random_walk(self):
         if self.state == 'Random Walk' and not rospy.is_shutdown():
