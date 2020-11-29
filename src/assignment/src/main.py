@@ -14,10 +14,16 @@ from calculator import calculate_linear_distance, calculate_angular_distance, av
 from image_processing import generate_mask, convert_to_hsv, show_image, find_closest_centroid
 from sensor_msgs.msg import Image, PointCloud2, LaserScan
 from sensor_msgs import point_cloud2
-from geometry_msgs.msg import Twist, Pose2D
+from geometry_msgs.msg import Twist, Pose2D, Point
 from nav_msgs.msg import Odometry
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+from visualization_msgs.msg import MarkerArray
 from actionlib_msgs.msg import *
+
+
+# roslaunch assignment assignment_launch.launch
+# roslaunch turtlebot3_navigation turtlebot3_navigation.launch map_file:=`rospack find assignment`/maps/train_env.yaml
+# Experimental: roslaunch explore_lite explore_costmap.launch
 
 
 class ObjectFinder:
@@ -39,6 +45,7 @@ class ObjectFinder:
         self.image_sub = rospy.Subscriber('camera/depth/points', PointCloud2, self.depth_callback)
         self.odom_sub = rospy.Subscriber('/odom', Odometry, self.odom_callback)
         self.scan_sub = rospy.Subscriber("/scan", LaserScan, self.scan_callback)
+        self.explore_sub = rospy.Subscriber('/~frontiers', MarkerArray, self.explore_callback)
 
         # Initialise robot state
         self.state = 'Random Walk'
@@ -71,16 +78,32 @@ class ObjectFinder:
         # So for this map, 20 * 20, 400 grid squares total.
         self.occ_grid = np.full(np.product(grid.size), -1)
 
+        # This should get populated in the map_callback
+        # At the moment the topic is active but for some reason it's not getting published
+        self.frontiers = []
+        self.frontier_points = []
+
+        self.targets_reached = 0
 
         while not rospy.is_shutdown():
 
             if len(self.objects) != 0:
+                # If there are targets, visit them
+                rospy.loginfo("Go to target.")
                 current_target = self.objects.pop(0)
+                while not self.move_to_target(current_target):
+                    rospy.loginfo("Trying again.")
+                self.targets_reached += 1
+            elif len(self.frontier_points) != 0:
+                # If there are no targets to visit, explore to find them
+                rospy.loginfo("Explore")
+                current_target = self.frontier_points.pop(0)
                 while not self.move_to_target(current_target):
                     rospy.loginfo("Trying again.")
             else:
                 pass
-                # Search strategy
+
+        rospy.loginfo("Exploration completed. Targets found: {}".format(self.targets_reached))
 
     def stop(self):
         self.pub.publish(Twist())
@@ -301,6 +324,11 @@ class ObjectFinder:
 
             rospy.loginfo("updated grid")
        
+    def map_callback(self, msg):
+        # Should return an array of frontiers to visit
+        # http://wiki.ros.org/explore_lite
+        self.frontiers = msg
+        self.frontier_points = [Point(frontier.header.pose.x, frontier.header.pose.y, 0) for frontier in self.frontiers]
 
 
     def random_walk(self):
