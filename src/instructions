@@ -1,17 +1,15 @@
 
-assuming you have ssh'd git clone --recursive git@github.com:leggedrobotics/darknet_ros.git correctly,
+do: 
+git clone --recursive git@github.com:tom13133/darknet_ros.git
 
 do the following:
-
-darknet_ros/darknet -> remove existing 'darknet/' and replace 'darknet/' with from:https://github.com/AlexeyAB/darknet
-
 darknet_ros/darknet/Makefile -> remove and replace with Makefile from:darknet_ros/darknet_ros/yolo_network_config -> replace with yolo_network_config from:https://github.com/psyao3/COMP4034-Group11/src/Makefile
 
 darknet_ros/darknet_ros/config -> add yolov4-tiny.yaml from https://github.com/psyao3/COMP4034-Group11/src/yolov4-tiny.yaml
 
 darknet_ros/darknet_ros/yolo_network_config -> replace with yolo_network_config from:https://github.com/psyao3/COMP4034-Group11/src/yolo_network_config
 
-
-do: catkin_make -DCMAKE_BUILD_TYPE=Release
+do: 
+catkin_make -DCMAKE_BUILD_TYPE=Release
 
 
