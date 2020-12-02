@@ -3,14 +3,14 @@
 Final ~/catkin_workspace should be:
 
 ~/catkin_workspace/src/darknet_ros
-    -darknet                                      from: git@github.com:AlexeyAB/darknet.git
+    -/darknet                                      from: git@github.com:AlexeyAB/darknet.git
         -Makefile   --replaced with modified ver.  
-    -darknet_ros                                  from: original git repo git@github.com:tom13133/darknet_ros.git
+    -/darknet_ros                                  from: original git repo git@github.com:tom13133/darknet_ros.git
         -CMakeLists.txt   --edited
         -/Config
             -yolov4-tiny.yaml   --added
         -/yolo_network_config                     from:https://github.com/psyao3/COMP4034-Group11/src/yolo_network_config
-    -darknet_ros_msgs                             from: original git repo git@github.com:tom13133/darknet_ros.git
+    -/darknet_ros_msgs                             from: original git repo git@github.com:tom13133/darknet_ros.git
     -
     -
     -misc files
