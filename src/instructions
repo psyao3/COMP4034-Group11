@@ -1,15 +1,37 @@
+Steps 2a & 2b can be done after step 3 but might as well if you're messing around in there already :)
 
+Step 1 ----------------------------------------------------
 do: 
+
 git clone --recursive git@github.com:tom13133/darknet_ros.git
 
+Step 2 ----------------------------------------------------
 do the following:
-darknet_ros/darknet/Makefile -> remove and replace with Makefile from:darknet_ros/darknet_ros/yolo_network_config -> replace with yolo_network_config from:https://github.com/psyao3/COMP4034-Group11/src/Makefile
 
-darknet_ros/darknet_ros/config -> add yolov4-tiny.yaml from https://github.com/psyao3/COMP4034-Group11/src/yolov4-tiny.yaml
+from "~/catkin_workspace/darknet_ros/" 
+delete the directory "/darknet" and git clone git@github.com:AlexeyAB/darknet.git
 
-darknet_ros/darknet_ros/yolo_network_config -> replace with yolo_network_config from:https://github.com/psyao3/COMP4034-Group11/src/yolo_network_config
+from "~/catkin_workspace/darknet_ros/darknet_ros/CMakeLists.txt"
+remove line 25 "-gencode arch=compute_30,code=sm_30"
 
+from "~/catkin_workspace/darknet_ros/darknet/Makefile"
+remove and replace with Makefile from:https://github.com/psyao3/COMP4034-Group11/src/Makefile
+
+Step 2a ----------------------------------------------------
+do:
+
+from "~/catkin_workspace/darknet_ros/darknet_ros/config"
+add "yolov4-tiny.yaml" from https://github.com/psyao3/COMP4034-Group11/src/yolov4-tiny.yaml
+
+Step 2b ----------------------------------------------------
+do:
+
+from "~/catkin_workspace/darknet_ros/darknet_ros/yolo_network_config"
+replace with yolo_network_config from:https://github.com/psyao3/COMP4034-Group11/src/yolo_network_config
+
+Step 3 ----------------------------------------------------
 do: 
+
 catkin_make -DCMAKE_BUILD_TYPE=Release
 
 
