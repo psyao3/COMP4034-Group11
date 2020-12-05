@@ -17,34 +17,48 @@ Final ~/catkin_workspace should be:
 
 ########################################################################################################
 
+Step 2a is optional if you have a CUDA enables GPU
 
-Steps 2a & 2b can be done after step 3 but might as well if you're messing around in there already :)
+Steps 2b & 2c can be done after step 3 but might as well if you're messing around in there already :)
 
 
 ########################################################################################################
 
-Step 1 ----------------------------------------------------
+STEP 1 ----------------------------------------------------
 do: 
 
 git clone --recursive git@github.com:tom13133/darknet_ros.git
 
 ########################################################################################################
 
-Step 2 ----------------------------------------------------
+STEP 2 ---------------------------------------------------- #FOR USE WITH CPU
 do the following:
 
 from "~/catkin_workspace/src/darknet_ros/" 
 delete the directory "/darknet" and git clone git@github.com:AlexeyAB/darknet.git
 
 from "~/catkin_workspace/src/darknet_ros/darknet/Makefile"
-remove and replace with Makefile from:https://github.com/psyao3/COMP4034-Group11/src/Makefile
+edit lines 4,5 and 6
+=0 to =1
+OPENCV=1
+AVX=1                if an error occurs set AVX=0
+OPENMP=1
 
 from "~/catkin_workspace/src/darknet_ros/darknet_ros/CMakeLists.txt"
-remove line 25 "-gencode arch=compute_30,code=sm_30"
+comment out line 215 "${DARKNET_PATH}/src/yolo_v2_class.cpp         ${DARKNET_PATH}/src/yolo_console_dll.cpp"
+(thanks Alex)
+
+you may need to remove line 25 "-gencode arch=compute_30,code=sm_30" if you get the error: 
+"nvcc -fatal: unsupported gpu architecture -gencode arch=compute_30"
+
+STEP 2a install the appropriate Cuda-Toolkit and cuDNN for your system. 
+Refer to https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html
+&
+https://docs.nvidia.com/deeplearning/cudnn/install-guide/index.html#installlinux
 
 ########################################################################################################
 
-Step 2a ----------------------------------------------------
+STEP 2b ----------------------------------------------------
 do:
 
 from "~/catkin_workspace/src/darknet_ros/darknet_ros/config"
@@ -52,7 +66,7 @@ add "yolov4-tiny.yaml" from https://github.com/psyao3/COMP4034-Group11/src/yolov
 
 ########################################################################################################
 
-Step 2b ----------------------------------------------------
+STEP 2c ----------------------------------------------------
 do:
 
 from "~/catkin_workspace/darknet_ros/darknet_ros/yolo_network_config"
@@ -60,7 +74,7 @@ replace with yolo_network_config from:https://github.com/psyao3/COMP4034-Group11
 
 ########################################################################################################
 
-Step 3 ----------------------------------------------------
+STEP 3 ----------------------------------------------------
 do: 
 
 catkin_make -DCMAKE_BUILD_TYPE=Release
