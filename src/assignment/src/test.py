@@ -1,18 +1,25 @@
 #!/usr/bin/env python
 
 import rospy
-from sensor_msgs.msg import Image
-from geometry_msgs.msg import Twist, Pose2D
+from sensor_msgs.msg import Image, PointCloud2
+from geometry_msgs.msg import Twist, Pose2D, Point
 from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import Odometry
+from sensor_msgs import point_cloud2
 import cv2, cv_bridge
 import numpy as np
 import math
 import random
 import tf
+import tf2_ros
+import tf2_geometry_msgs
+import struct
+import actionlib
 from darknet_ros_msgs.msg import BoundingBoxes
+from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from calculator import calculate_linear_distance, calculate_angular_distance, average_distance
 from image_processing import generate_mask, convert_to_hsv, show_image, find_closest_centroid
+from actionlib_msgs.msg import *
 
 
 class Follower:
@@ -25,12 +32,15 @@ class Follower:
 
         # Speeds to use
         self.linear_speed = 0.4
-        self.angular_speed = 0.4
+        self.angular_speed = 0.05
 
         # Publishers and Subscribers
         self.pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
 
         self.detection_img = rospy.Subscriber('/darknet_ros/detection_image', Image, self.image_callback)
+        self.image_sub = rospy.Subscriber('/darknet_ros/bounding_boxes', BoundingBoxes, self.box_callback)
+        self.depth_sub = rospy.Subscriber('camera/depth/image_raw', Image, self.depth_callback)
+        #self.cloud_sub = rospy.Subscriber('camera/depth/points', PointCloud2, self.cloud_callback)
         self.odom_sub = rospy.Subscriber('/odom', Odometry, self.odom_callback)
         self.scan_sub = rospy.Subscriber("/scan", LaserScan, self.scan_callback)
 
@@ -52,8 +62,135 @@ class Follower:
         self.closest_obstacle = None
         self.right_obst, self.front_obst, self.left_obst = None, None, None
 
+
+        self.goal_x =0
+        self.goal_y =0
+        self.current_goal = False
+        self.objects = []
+        self.facing_object = False
+
+        client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
+
+        while not rospy.is_shutdown():
+
+            if len(self.objects) >0:
+                # If there are targets, visit them
+                rospy.loginfo("Go to target.")
+                current_target = self.objects.pop(0)
+                
+
+                rospy.loginfo("Sending goal location")
+                client.send_goal(current_target)
+
+                client.wait_for_result(rospy.Duration(100))
+
+                if (client.get_state() == GoalStatus.SUCCEEDED):
+                    rospy.loginfo("You have reached the destination")
+                    
+                    twist = Twist()
+                    twist.angular.z = 1.57/2    
+                    for i in range(5):         
+                        self.pub.publish(twist)
+                        self.rate.sleep()
+                    
+                    self.pub.publish(Twist())
+
+                    self.state == 'Random Walk'
+                    self.current_goal = False
+                    self.facing_object = False
+                
+                else:
+                    rospy.loginfo("The robot failed to reach the destination")
+     
+            else:
+                pass
+
+
     def stop(self):
         self.pub.publish(Twist())
+
+
+    def depth_callback(self, data):
+        '''
+        centralises the bounding box on the robot vision and creates a move base goal 
+        '''
+        
+        if self.state == 'Sending Target':
+
+            depth_image = self.bridge.imgmsg_to_cv2(data, "passthrough")
+
+            _, w = depth_image.shape # width
+            twist = Twist()
+            
+
+            #distance to object
+            depth = depth_image[self.goal_y,self.goal_x]
+            
+            if not self.facing_object:
+                rospy.loginfo ("depth: {} ".format(depth))
+                if not ((w//2) -100  <=  self.goal_x and self.goal_x <= (w//2) +100):
+
+                    #currently just rotate left
+                    twist.angular.z = self.angular_speed    
+                                 
+                    self.pub.publish(twist)
+                    self.rate.sleep()
+                else:
+                    self.facing_object = True
+
+
+
+            else:
+
+
+                goal = MoveBaseGoal()
+
+                # using base_link
+                
+                goal.target_pose.header.frame_id = "base_link"
+                goal.target_pose.header.stamp = rospy.Time.now()
+
+                # set positions of the goal location
+                goal.target_pose.pose.position = Point(depth-0.5, 0, 0)
+                goal.target_pose.pose.orientation.x = 0.0
+                goal.target_pose.pose.orientation.y = 0.0
+                goal.target_pose.pose.orientation.z = 0.0
+                goal.target_pose.pose.orientation.w = 1.0
+
+            
+                self.state = 'To Target'
+                self.objects.append(goal)
+
+
+    def box_callback(self, data):
+
+        if not self.facing_object:
+
+            for box in data.bounding_boxes:
+                rospy.loginfo(
+                    "Xmin: {}, Xmax: {} Ymin: {}, Ymax: {}".format(
+                        box.xmin, box.xmax, box.ymin, box.ymax
+                    )
+                )
+                # update the x and y values for the bounding box
+                x = (box.xmax + box.xmin)//2
+                y = (box.ymax + box.ymin)//2
+
+                self.goal_x = x
+                self.goal_y = y
+
+                rospy.loginfo("X: {},  Y: {}".format( x, y))
+                
+                self.state = 'Sending Target'
+
+                #self.current_goal = True
+
+                
+
+            
+
+                break
+
 
     def odom_callback(self, msg):
         # Get (x, y, theta) specification from odometry topic
@@ -80,17 +217,19 @@ class Follower:
 
 
     def image_callback(self, msg):
-
+        pass
 
         # Convert the image message to openCV type, scale size.
-        image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
+        #image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
         
 
-        cv2.imshow("window",image)        
-        cv2.waitKey(1)
+        #cv2.imshow("window",image)        
+        #cv2.waitKey(1)
 
     def beacon_towards_closest_target(self, centroids, hsv, targets):
         if self.state == 'Target' and not rospy.is_shutdown():
+
+
             # If there are multiple green objects/targets, only follow one.
             # Remove the one further away from the image.
 
@@ -106,7 +245,7 @@ class Follower:
             obj_centroid = centroids[largest_target, 0]
 
             # Implement a proportional controller to beacon towards it
-            err = obj_centroid - w / 2
+            
             twist_msg.linear.x = self.linear_speed
             twist_msg.angular.z = -float(err) / 400
 
@@ -164,3 +303,22 @@ if __name__ == '__main__':
     except rospy.ROSInterruptException as e:
         print("An exception was caught.")
         raise e
+
+
+'''
+def cloud_callback(self, data):
+
+
+    width = data.width
+    height = data.height
+    point_step = data.point_step
+    row_step = data.row_step
+
+    array_pos = self.goal_y*row_step + self.goal_x*point_step
+
+    (X, Y, Z) = struct.unpack_from('fff', data.data, offset=array_pos)
+
+
+    # rospy.loginfo("x: {}, y: {}, z: {}".format(X,Y,Z))
+'''
+        
