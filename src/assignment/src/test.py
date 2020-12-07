@@ -37,10 +37,11 @@ class Follower:
         # Publishers and Subscribers
         self.pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
 
-        self.detection_img = rospy.Subscriber('/darknet_ros/detection_image', Image, self.image_callback)
         self.image_sub = rospy.Subscriber('/darknet_ros/bounding_boxes', BoundingBoxes, self.box_callback)
         self.depth_sub = rospy.Subscriber('camera/depth/image_raw', Image, self.depth_callback)
+        #self.cam_info = rospy.Subscribe('camera/depth/camera_info', CameraInfo, self.camera_info_callback)
         #self.cloud_sub = rospy.Subscriber('camera/depth/points', PointCloud2, self.cloud_callback)
+
         self.odom_sub = rospy.Subscriber('/odom', Odometry, self.odom_callback)
         self.scan_sub = rospy.Subscriber("/scan", LaserScan, self.scan_callback)
 
@@ -151,7 +152,7 @@ class Follower:
                 goal.target_pose.header.stamp = rospy.Time.now()
 
                 # set positions of the goal location
-                goal.target_pose.pose.position = Point(depth-0.5, 0, 0)
+                goal.target_pose.pose.position = Point(depth, 0, 0)
                 goal.target_pose.pose.orientation.x = 0.0
                 goal.target_pose.pose.orientation.y = 0.0
                 goal.target_pose.pose.orientation.z = 0.0
@@ -162,24 +163,31 @@ class Follower:
                 self.objects.append(goal)
 
 
+    #def camera_info_callback(self, data):
+
+        
+
+
     def box_callback(self, data):
 
         if not self.facing_object:
 
             for box in data.bounding_boxes:
-                rospy.loginfo(
-                    "Xmin: {}, Xmax: {} Ymin: {}, Ymax: {}".format(
-                        box.xmin, box.xmax, box.ymin, box.ymax
+                '''rospy.loginfo(
+                    "Class: {}, Xmin: {}, Xmax: {}, Ymin: {}, Ymax: {}".format(
+                        box.Class, box.xmin, box.xmax, box.ymin, box.ymax
                     )
-                )
+                )'''
                 # update the x and y values for the bounding box
-                x = (box.xmax + box.xmin)//2
-                y = (box.ymax + box.ymin)//2
+                obj_class = box.Class
+                #gets the center of bounding box
+                x = ((box.xmax + box.xmin)/2)+box.xmin
+                y = ((box.ymax + box.ymin)/2)+box.ymin
 
                 self.goal_x = x
                 self.goal_y = y
 
-                rospy.loginfo("X: {},  Y: {}".format( x, y))
+                rospy.loginfo("Class: {}, X: {},  Y: {}".format(obj_class, x, y))
                 
                 self.state = 'Sending Target'
 
@@ -216,35 +224,10 @@ class Follower:
         self.closest_obstacle = min(self.front_obst, self.left_obst, self.right_obst)
 
 
-    def image_callback(self, msg):
-        pass
-
-        # Convert the image message to openCV type, scale size.
-        #image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
-        
-
-        #cv2.imshow("window",image)        
-        #cv2.waitKey(1)
-
-    def beacon_towards_closest_target(self, centroids, hsv, targets):
-        if self.state == 'Target' and not rospy.is_shutdown():
+    def beacon_towards_closest_target(self, targets):
+        if self.state == 'To Target' and not rospy.is_shutdown():
 
 
-            # If there are multiple green objects/targets, only follow one.
-            # Remove the one further away from the image.
-
-            # Need Image width to get centroid of turtlebot's view.
-            _, w, _ = hsv.shape
-            twist_msg = Twist()
-
-            # Iterate over targets, keep largest one.
-            largest_target = find_closest_centroid(centroids, w)
-
-            # Keep only largest_target, remove others from image.
-            #mask = np.where(targets == largest_target, np.uint8(255), np.uint8(0))
-            obj_centroid = centroids[largest_target, 0]
-
-            # Implement a proportional controller to beacon towards it
             
             twist_msg.linear.x = self.linear_speed
             twist_msg.angular.z = -float(err) / 400
@@ -307,18 +290,11 @@ if __name__ == '__main__':
 
 '''
 def cloud_callback(self, data):
-
-
     width = data.width
     height = data.height
     point_step = data.point_step
     row_step = data.row_step
-
     array_pos = self.goal_y*row_step + self.goal_x*point_step
-
     (X, Y, Z) = struct.unpack_from('fff', data.data, offset=array_pos)
-
-
     # rospy.loginfo("x: {}, y: {}, z: {}".format(X,Y,Z))
 '''
-        
