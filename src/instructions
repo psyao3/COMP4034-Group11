@@ -65,6 +65,21 @@ CUDNN=1
 CUDNN_HALF=1
 OPENCV=1
 
+## IF HAVING ISSUES:
+Use these commands to do a clean uninstall of your nvidia drivers and CUDA. You will need to download and install the appropriate nvidia drivers again 
+for your GPU before following CUDA/CUDNN installation instructions. (Personally, after this clean uninstall, installing CUDA via debian network and 
+CUDNN via the tgz file worked for me - Alex) 
+
+To remove CUDA Toolkit:
+$ sudo apt-get --purge remove "*cublas*" "*cufft*" "*curand*" \
+ "*cusolver*" "*cusparse*" "*npp*" "*nvjpeg*" "cuda*" "nsight*" 
+
+To remove NVIDIA Drivers:
+$ sudo apt-get --purge remove "*nvidia*"
+
+To clean up the uninstall:
+$ sudo apt-get autoremove
+
 ########################################################################################################
 
 STEP 2b ----------------------------------------------------
