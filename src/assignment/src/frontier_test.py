@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
+from math import sqrt, pow
 # import Graph
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal, MoveBaseActionResult
 from nav_msgs.msg import OccupancyGrid
@@ -72,17 +73,33 @@ class Tour:
         self.goal_publisher = rospy.Publisher('/move_base_simple/goal', PoseStamped, queue_size=10)
         rospy.Subscriber('move_base/result', MoveBaseActionResult, self.status_callback)
         rospy.Subscriber('/move_base/global_costmap/costmap', OccupancyGrid, self.grid_callback)
+        while self.occ_grid_info is None:
+            pass
         rospy.Subscriber('/move_base/global_costmap/costmap_updates', OccupancyGridUpdate, self.update_callback)
+        rospy.Subscriber('/odom', Odometry, self.odom_callback)
 
         self.goal_status = -1
 
-    # def frontier_logic(self):
-    #     frontier = []
-    #     low = -1 # Need to change this to something that makes sense
-    #     for y in range(self.occ_grid_info.height):
-    #         for x in range(self.occ_grid_info.height):
-    #             if self.get_occupancy_grid_value(x, y) < low and self.exists_unknown_neighbour(x, y):
-    #                 frontier.append((x, y))
+        frontiers = self.get_frontiers()
+        #print(frontiers)
+        print("Pose")
+        print(self.pose)
+        print("Grid coordinates")
+        print(self.world_to_occ_grid(self.pose.x, self.pose.y))
+        print("Closest frontier")
+        print(self.get_closest_frontier(self.pose.x, self.pose.y, frontiers))
+        print(self.print_grid())
+
+    def get_frontiers(self):
+        frontiers = []
+        low = 20  # Need to change this to something that makes sense
+        for y in range(self.occ_grid_info.height):
+            for x in range(self.occ_grid_info.height):
+                if self.get_occupancy_grid_value(x, y) == -1:
+                    continue
+                if self.get_occupancy_grid_value(x, y) < low and self.exists_unknown_neighbour(x, y):
+                    frontiers.append((x, y))
+        return frontiers
 
     def print_grid(self):
         # To scale it down to 20x20 I need a 400x400 matrix
@@ -92,19 +109,23 @@ class Tour:
         occ_grid = self.occ_grid
         padded_grid = np.ones((400,400))
         padded_grid[:occ_grid.shape[0],:occ_grid.shape[1]] = occ_grid
-        resized_grid = padded_grid.reshape(20,20,20,20).mean(axis=(1,3))
+        resized_grid = padded_grid.reshape(20,20,20,20).mean(-1).mean(1)
 
         # Print 1d grid
         print "\n\n"
 
         for line in resized_grid:
             values = [' - ' if val == -1 else ' X ' for val in line]
-            print ''.join(values)
+            values = [str(int(val)) for val in line]
+            print ' '.join(values)
 
         print("\n\n")
 
     def exists_unknown_neighbour(self, x, y):
-        if -1 in self.get_neighbours(x, y).reshape(3,3):
+        # Remove current cell from neighbours
+        neighbours = self.get_neighbours(x, y).reshape(3, 3)
+        neighbours[1,1] = 0
+        if -1 in neighbours:
             return True
         else:
             return False
@@ -118,6 +139,11 @@ class Tour:
              for row in range(row_number - 1 - radius, row_number + radius)]
         )
 
+    def get_closest_frontier(self, current_x, current_y, frontiers):
+        current_pos = (current_x, current_y)
+        sorted_frontiers = sorted(frontiers, key=lambda v: sqrt(pow((v[0] - current_pos[0]), 2) + pow((v[1] - current_pos[1]), 2)))
+        return sorted_frontiers[0]
+
     def status_callback(self, msg):
         self.goal_status = msg.status.status
 
@@ -128,7 +154,17 @@ class Tour:
     def update_callback(self, msg):
         update = np.array(msg.data, dtype=np.int8).reshape(msg.height, msg.width)
         self.occ_grid[msg.y:msg.y + msg.height, msg.x:msg.x + msg.width] = update
-        self.print_grid()
+        #self.print_grid()
+
+    def odom_callback(self, msg):
+        # Get (x, y, theta) specification from odometry topic
+        quarternion = [msg.pose.pose.orientation.x,msg.pose.pose.orientation.y, \
+                    msg.pose.pose.orientation.z, msg.pose.pose.orientation.w]
+        (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(quarternion)
+
+        self.pose.theta = yaw
+        self.pose.x = msg.pose.pose.position.x
+        self.pose.y = msg.pose.pose.position.y
 
     def get_occupancy_grid_value(self, x, y):
         return self.occ_grid[y][x]
