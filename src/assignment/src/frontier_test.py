@@ -74,21 +74,16 @@ class Tour:
         rospy.Subscriber('move_base/result', MoveBaseActionResult, self.status_callback)
         rospy.Subscriber('/move_base/global_costmap/costmap', OccupancyGrid, self.grid_callback)
         while self.occ_grid_info is None:
-            pass
+            rospy.loginfo("Waiting for occupancy to be initialised.")
+            rospy.sleep(0.5)
         rospy.Subscriber('/move_base/global_costmap/costmap_updates', OccupancyGridUpdate, self.update_callback)
         rospy.Subscriber('/odom', Odometry, self.odom_callback)
 
         self.goal_status = -1
 
-        frontiers = self.get_frontiers()
-        #print(frontiers)
-        print("Pose")
-        print(self.pose)
-        print("Grid coordinates")
-        print(self.world_to_occ_grid(self.pose.x, self.pose.y))
-        print("Closest frontier")
-        print(self.get_closest_frontier(self.pose.x, self.pose.y, frontiers))
-        print(self.print_grid())
+        self.explore()
+
+
 
     def get_frontiers(self):
         frontiers = []
@@ -179,6 +174,27 @@ class Tour:
         grid_y = int(round((world_y - self.occ_grid_info.origin.position.y) / self.occ_grid_info.resolution))
         return grid_x, grid_y
 
+    def explore(self):
+        rospy.loginfo("Start exploration.")
+
+        while self.pose is None:
+            rospy.loginfo("Waiting for pose to be intiialised.")
+
+        frontiers = self.get_frontiers()
+        x_grid, y_grid = self.world_to_occ_grid(self.pose.x, self.pose.y)
+        target = self.get_closest_frontier(x_grid, y_grid, frontiers)
+        target_x, target_y = self.occ_grid_to_world(target[0], target[1])
+        target_pose = Pose2D()
+        target_pose.x = target_x
+        target_pose.y = target_y
+
+        rospy.loginfo("Pose: {}".format(self.pose))
+        rospy.loginfo("Target: {}".format(target_pose))
+        self.move_to_target(target_pose)
+
+        print(self.print_grid())
+
+
     def patrol(self):
         rospy.loginfo("Start patrol.")
         # Empty dictionaries {} evaluate to False
@@ -236,7 +252,7 @@ if __name__ == '__main__':
     try:
         rospy.init_node('tour')
         tour = Tour()
-        tour.patrol()
+        #tour.patrol()
         rospy.spin()
     except rospy.ROSInterruptException as e:
         print("An exception was caught.")
