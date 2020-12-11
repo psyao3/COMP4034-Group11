@@ -82,7 +82,7 @@ def box_callback(data, self):
             Hopefully this works as intended (using a publisher to move_base/cancel)
         '''
         # Cancel current move_base goal if there is one.
-        self.cancel_pub.pub({}) # {} empty ID should cancel all goals.
+        self.cancel_pub.publish(GoalID()) # {} empty ID should cancel all goals.
 
         # Break loop now we have target
         break
