@@ -7,10 +7,10 @@ import cv2
 def generate_mask(hsv):
     # Colour slicing to identify green objects
     # Colour of green object is [60, 159, 82]
-    lower_green = np.array([40, 139, 62])
-    upper_green = np.array([80, 179, 102])
+    lower_blue = np.array([100, 0, 0])
+    upper_blue = np.array([130, 200, 200])
     # Range of green values to account for shade differences
-    mask = cv2.inRange(hsv, lower_green, upper_green)
+    mask = cv2.inRange(hsv, lower_blue, upper_blue)
     return mask
 
 

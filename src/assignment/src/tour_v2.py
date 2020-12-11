@@ -142,23 +142,26 @@ class Tour:
 
             rospy.loginfo("Class: {}, X: {},  Y: {}".format(obj_class, x, y))
 
-            camera = img_geo.PinholeCameraModel()
+            camera = img_geo.StereoCameraModel()
             camera_info = rospy.wait_for_message('/camera/depth/camera_info', CameraInfo, timeout=None)
-            camera.fromCameraInfo(camera_info)
+          #  camera.fromCameraInfo(camera_info)
 
             xyz = Point()
 
 
             Z = self.depth
 
-            u = camera.getDeltaU(self.goal_x, float(Z))
-            v = camera.getDeltaV(self.goal_y, float(Z))
+          #  u = camera.getDeltaU(self.goal_x, float(Z))
+           # v = camera.getDeltaV(self.goal_y, float(Z))
 
-            uv_raw = (u,v)
+            #uv_raw = (u,v)
 
-            uv = camera.rectifyPoint(uv_raw)
+            #uv = camera.rectifyPoint(uv_raw)
 
-            xyz = camera.projectPixelTo3dRay(uv)
+            u = x
+            v = y
+            disparity = camera.getDisparity(Z)
+            xyz = camera.projectPixelTo3d((u, v), disparity)
 
             rospy.loginfo("Target: {}".format(xyz))
 

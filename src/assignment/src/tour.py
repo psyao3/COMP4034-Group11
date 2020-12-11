@@ -80,6 +80,7 @@ class Tour:
             rospy.loginfo("Target: {}".format(target))
 
             # Need to navigate to the target via defined edges
+           
             self.move_to_target(target)
 
             self.visited_nodes.append(target)

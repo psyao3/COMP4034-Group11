@@ -73,6 +73,11 @@ class Follower:
         self.box_height = None 
         self.box_width = None
 
+
+        # Variables for evaluation
+        self.start_time = rospy.get_rostime()
+        self.time_limit = 300 # 5 minutes
+
         # Start main control function
         self.main()
 
@@ -89,7 +94,7 @@ class Follower:
         w = 1920
         h = 1080
 
-        # Stop if all 4 targets have been found.
+        # Stop if all 4 targets have been found. TODO: add condition to stop after 5 mins (demo timer)
         while not rospy.is_shutdown() and not len(self.complete) > 3:
 
             # Check if target reached
@@ -132,6 +137,11 @@ class Follower:
                 to stop the current goal executing here. Then beaconing
                 would run instead in the next iteration of main.
 
+                So call explore() here, most of the other methods could go 
+                in a frontier_methods.py file (like with grid methods)
+                and import it, the callbacks can be added to callbacks.py,
+                and combine the __init__
+
                 '''
                 self.stop()
             
@@ -141,6 +151,24 @@ class Follower:
 
         # We did it! All targets reached and acknowledged :)
         rospy.loginfo("All targets reached, shutting down.")
+        self.evaluate()
+
+
+    def evaluate(self):
+
+        run_time = rospy.get_rostime() - self.start_time
+
+        rospy.loginfo("Statistics of this run:")
+        rospy.loginfo("Runtime in seconds: %f" % run_time)
+        rospy.loginfo("Targets found: %d" % len(self.complete))
+        rospy.loginfo(self.complete) # The targets
+
+        # Extra stats can be added w.r.t to frontiers
+        '''
+            number of frontiers explored?
+            number of move_base commands sent?
+            % of map explored?
+        '''
 
 
 
