@@ -3,7 +3,7 @@ yolo_model:
   config_file:
     name: yolov4-tiny.cfg
   weight_file:
-    name: yolov4-tiny_final.weights
+    name: alex_final.weights
   threshold:
     value: 0.8
   detection_classes:

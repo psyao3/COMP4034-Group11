@@ -15,66 +15,13 @@ from calculator import calculate_linear_distance, calculate_angular_distance, av
 from image_processing import generate_mask, convert_to_hsv, show_image, find_closest_centroid
 from actionlib_msgs.msg import *
 
+import cv2
+
 ## NOTE: to extract the callbacks from the main class, the data/msg variable is
 # now the first parameter, and 'self' (the instance of the main class) is passed
 # in second. This is because self needs to be passed in as an extra parameter
 # when creating the subscriber, rather than calling self.callback.
-  
-
-def depth_callback(data, self):
-    '''
-    centralises the bounding box on the robot vision and creates a move base goal 
-    '''
-    
-    if self.state == 'Sending Target':
-
-        depth_image = self.bridge.imgmsg_to_cv2(data, "passthrough")
-
-        _, w = depth_image.shape # width
-        twist = Twist()
-        
-
-        # distance to object
-        depth = depth_image[self.goal_y,self.goal_x]
-        
-        if not self.facing_object:
-            rospy.loginfo ("depth: {} ".format(depth))
-            if not ((w//2) -100  <=  self.goal_x and self.goal_x <= (w//2) +100):
-
-                #currently just rotate left
-                twist.angular.z = self.angular_speed    
-                                
-                self.pub.publish(twist)
-                self.rate.sleep()
-            else:
-                self.facing_object = True
-
-
-
-        else:
-
-
-            goal = MoveBaseGoal()
-
-            # using base_link
-            
-            goal.target_pose.header.frame_id = "base_link"
-            goal.target_pose.header.stamp = rospy.Time.now()
-
-            # set positions of the goal location
-            goal.target_pose.pose.position = Point(depth, 0, 0)
-            goal.target_pose.pose.orientation.x = 0.0
-            goal.target_pose.pose.orientation.y = 0.0
-            goal.target_pose.pose.orientation.z = 0.0
-            goal.target_pose.pose.orientation.w = 1.0
-
-        
-            self.state = 'To Target'
-            self.objects.append(goal)
-
-
-#def camera_info_callback(self, data):
-
+     
     
 
 
@@ -114,7 +61,13 @@ def box_callback(data, self):
         self.goal_x = x
 
         # y for identifying when we've reached an object (and stopping)
+        # This works mostly, but need special case for number 5.
         self.goal_y = box.ymax
+
+        # Use height and width for telling when we've arrived at number 5.
+        self.box_height = box.ymax - box.ymin 
+        self.box_width = box.xmax - box.xmin
+
 
        # rospy.loginfo("Class: {}, X: {},  Y: {}".format(obj_class, x, y))
         
@@ -123,10 +76,32 @@ def box_callback(data, self):
 
         self.is_target = True
 
+        '''
+            This will interrupt the move_base goal so beaconing can begin.
+
+            Hopefully this works as intended (using a publisher to move_base/cancel)
+        '''
+        # Cancel current move_base goal if there is one.
+        self.cancel_pub.pub({}) # {} empty ID should cancel all goals.
+
         # Break loop now we have target
         break
 
+#def image_callback(msg, self):
 
+    #hsv = convert_to_hsv(msg, self.bridge)
+    #image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
+   # cv2.imshow("fig", image)
+    #cv2.waitKey(1)
+    #mask = generate_mask(hsv)
+
+    #target = cv2.bitwise_and(hsv, hsv, mask=mask)
+    #show_image(mask=mask, masked_image=target)
+
+    # Label objects in image (0 is background), matrix of labels and stats
+    #num_targets, labels, stats, centroids = cv2.connectedComponentsWithStats(mask)
+
+    #threshold = 0.5
 
 
 def odom_callback(msg, self):
@@ -150,6 +125,8 @@ def scan_callback(msg, self):
     self.right_obst = min(obst_dists[0:5])
     self.front_obst = min(obst_dists[5:7])
     self.left_obst = min(obst_dists[7:])
+
+    self.any_obst = min(min(self.ranges[0:75]), min(self.ranges[285:]))
 
     self.closest_obstacle = min(self.front_obst, self.left_obst, self.right_obst)
 
