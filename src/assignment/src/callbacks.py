@@ -14,6 +14,7 @@ from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from calculator import calculate_linear_distance, calculate_angular_distance, average_distance
 from image_processing import generate_mask, convert_to_hsv, show_image, find_closest_centroid
 from actionlib_msgs.msg import *
+from std_msgs.msg import Float32MultiArray
 
 import cv2
 
@@ -186,3 +187,23 @@ def box_callback(data, self):
 
     self.is_target = True
 '''
+
+
+def grid_callback(msg, self):
+    self.occ_grid = np.array([-1 for cell in msg.data], dtype=np.int8).reshape(msg.info.height, msg.info.width)
+    self.occ_grid_info = msg.info
+    grid_to_pub = Float32MultiArray()
+    grid_to_pub.data = self.occ_grid.flatten()
+    self.occ_grid_publisher.publish(grid_to_pub)
+
+
+def update_callback(msg, self):
+    update = np.array(msg.data, dtype=np.int8).reshape(msg.height, msg.width)
+    self.occ_grid[msg.y:msg.y + msg.height, msg.x:msg.x + msg.width] = update
+    grid_to_pub = Float32MultiArray()
+    grid_to_pub.data = self.occ_grid.flatten()
+    self.occ_grid_publisher.publish(grid_to_pub)
+
+
+def status_callback(msg, self):
+    self.goal_status = msg.status.status

@@ -8,6 +8,7 @@ from nav_msgs.msg import OccupancyGrid
 from map_msgs.msg import OccupancyGridUpdate
 from geometry_msgs.msg import Twist, Pose2D, Point, PoseStamped
 from nav_msgs.msg import Odometry
+from std_msgs.msg import Float32MultiArray
 
 # from callbacks import  *
 from actionlib_msgs.msg import *
@@ -71,6 +72,7 @@ class Tour:
         self.pose = Pose2D()
 
         self.goal_publisher = rospy.Publisher('/move_base_simple/goal', PoseStamped, queue_size=10)
+        self.occ_grid_publisher = rospy.Publisher('/occ_grid', Float32MultiArray, queue_size=10)
         rospy.Subscriber('move_base/result', MoveBaseActionResult, self.status_callback)
         rospy.Subscriber('/move_base/global_costmap/costmap', OccupancyGrid, self.grid_callback)
         while self.occ_grid_info is None:
@@ -82,8 +84,6 @@ class Tour:
         self.goal_status = -1
 
         self.explore()
-
-
 
     def get_frontiers(self):
         frontiers = []
@@ -145,11 +145,16 @@ class Tour:
     def grid_callback(self, msg):
         self.occ_grid = np.array([-1 for cell in msg.data], dtype=np.int8).reshape(msg.info.height, msg.info.width)
         self.occ_grid_info = msg.info
+        grid_to_pub = Float32MultiArray()
+        grid_to_pub.data = self.occ_grid.flatten()
+        self.occ_grid_publisher.publish(grid_to_pub)
 
     def update_callback(self, msg):
         update = np.array(msg.data, dtype=np.int8).reshape(msg.height, msg.width)
         self.occ_grid[msg.y:msg.y + msg.height, msg.x:msg.x + msg.width] = update
-        #self.print_grid()
+        grid_to_pub = Float32MultiArray()
+        grid_to_pub.data = self.occ_grid.flatten()
+        self.occ_grid_publisher.publish(grid_to_pub)
 
     def odom_callback(self, msg):
         # Get (x, y, theta) specification from odometry topic

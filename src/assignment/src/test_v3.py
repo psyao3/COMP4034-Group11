@@ -2,9 +2,12 @@
 
 import rospy
 from sensor_msgs.msg import Image, PointCloud2
-from geometry_msgs.msg import Twist, Pose2D, Point
+from std_msgs.msg import Float32MultiArray
+from geometry_msgs.msg import Twist, Pose2D, Point, PoseStamped
 from sensor_msgs.msg import LaserScan
-from nav_msgs.msg import Odometry
+from nav_msgs.msg import Odometry, OccupancyGrid
+from map_msgs.msg import OccupancyGridUpdate
+from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal, MoveBaseActionResult
 from sensor_msgs import point_cloud2
 import cv2, cv_bridge
 import numpy as np
@@ -22,6 +25,7 @@ from image_processing import generate_mask, convert_to_hsv, show_image, find_clo
 from actionlib_msgs.msg import *
 
 from callbacks import *
+from frontier_methods import *
 
 class Follower:
 
@@ -35,13 +39,29 @@ class Follower:
         self.linear_speed = 0.4
         self.angular_speed = 0.05
 
+        # Occupancy grid initialisation
+        self.occ_grid = None
+        self.occ_grid_info = None
+
         # Publishers and Subscribers
         self.pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
+        self.goal_publisher = rospy.Publisher('/move_base_simple/goal', PoseStamped, queue_size=10)
+        self.occ_grid_publisher = rospy.Publisher('/occ_grid', Float32MultiArray, queue_size=10)
 
         self.box_sub = rospy.Subscriber('/darknet_ros/bounding_boxes', BoundingBoxes, box_callback, (self))
 
         self.odom_sub = rospy.Subscriber('/odom', Odometry, odom_callback, (self))
         self.scan_sub = rospy.Subscriber("/scan", LaserScan, scan_callback, (self))
+
+        # Subscriber to get the move_base result
+        rospy.Subscriber('move_base/result', MoveBaseActionResult, status_callback, (self))
+        # Subsribers for occupancy grids - global costmap and updates
+        # self.occ_grid_ingo needs to be initialised before it's updated
+        rospy.Subscriber('/move_base/global_costmap/costmap', OccupancyGrid, grid_callback, (self))
+        while self.occ_grid_info is None:
+            rospy.loginfo("Waiting for occupancy to be initialised.")
+            rospy.sleep(0.5)
+        rospy.Subscriber('/move_base/global_costmap/costmap_updates', OccupancyGridUpdate, update_callback, (self))
 
         # Publisher to cancel current move base command to use in box callback.
         self.cancel_pub = rospy.Publisher('/move_base/cancel', GoalID, queue_size=1)
@@ -60,8 +80,8 @@ class Follower:
         self.any_obst = None
 
         # Bounding box related variables
-        self.goal_x =0
-        self.goal_y =0
+        self.goal_x = 0
+        self.goal_y = 0
     
         self.current_tgt_class = None
         self.is_target = False
@@ -78,8 +98,12 @@ class Follower:
         self.start_time = rospy.get_rostime()
         self.time_limit = 300 # 5 minutes
 
+        # Initialise move_base goal status
+        self.goal_status = -1
+
         # Start main control function
         self.main()
+
 
     # Publish a stop message
     def stop(self):
@@ -143,7 +167,24 @@ class Follower:
                 and combine the __init__
 
                 '''
-                self.stop()
+                rospy.loginfo("Start exploration.")
+
+                while self.pose is None:
+                    rospy.loginfo("Waiting for pose to be intiialised.")
+
+                frontiers = get_frontiers(self)
+                x_grid, y_grid = world_to_occ_grid(self, self.pose.x, self.pose.y)
+                target = get_closest_frontier(self, x_grid, y_grid, frontiers)
+                target_x, target_y = occ_grid_to_world(self, target[0], target[1])
+                target_pose = Pose2D()
+                target_pose.x = target_x
+                target_pose.y = target_y
+
+                rospy.loginfo("Pose: {}".format(self.pose))
+                rospy.loginfo("Target: {}".format(target_pose))
+                move_to_target(self, target_pose)
+
+                # self.stop()
             
             
             # Sleep
