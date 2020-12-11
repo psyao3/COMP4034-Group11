@@ -44,9 +44,10 @@ class Follower:
         self.scan_sub = rospy.Subscriber("/scan", LaserScan, scan_callback, (self))
 
         # Publisher to cancel current move base command to use in box callback.
-        self.cancel_pub = rospy.Publisher('/move_base/cancel', GoalID)
+        self.cancel_pub = rospy.Publisher('/move_base/cancel', GoalID, queue_size=1)
 
-
+        # Pose for odom
+        self.pose = Pose2D()
 
         # Initialise image processing
         self.bridge = cv_bridge.CvBridge()
