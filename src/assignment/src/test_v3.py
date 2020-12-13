@@ -23,6 +23,7 @@ from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from calculator import calculate_linear_distance, calculate_angular_distance, average_distance
 from image_processing import generate_mask, convert_to_hsv, show_image, find_closest_centroid
 from actionlib_msgs.msg import *
+import matplotlib.pyplot as plt
 
 from callbacks import *
 from frontier_methods import *
@@ -156,35 +157,45 @@ class Follower:
 
             else:
                 '''
-                I think frontier exploration strategy should go here.
-                In the bbox_callback we can publish a cancel message
-                to stop the current goal executing here. Then beaconing
-                would run instead in the next iteration of main.
-
-                So call explore() here, most of the other methods could go 
-                in a frontier_methods.py file (like with grid methods)
-                and import it, the callbacks can be added to callbacks.py,
-                and combine the __init__
-
+                Frontier Exploration logic
                 '''
                 rospy.loginfo("Start exploration.")
 
                 while self.pose is None:
-                    rospy.loginfo("Waiting for pose to be intiialised.")
+                    rospy.loginfo("Waiting for pose to be initialised.")
 
+                # Frontiers include the ones outside the arena
                 frontiers = get_frontiers(self)
-                x_grid, y_grid = world_to_occ_grid(self, self.pose.x, self.pose.y)
-                target = get_closest_frontier(self, x_grid, y_grid, frontiers)
-                target_x, target_y = occ_grid_to_world(self, target[0], target[1])
-                target_pose = Pose2D()
-                target_pose.x = target_x
-                target_pose.y = target_y
+                # Removing frontiers outside the arena - need to add two sides
+                valid_frontiers = [point for point in frontiers if point[0] > 165 and point[1] < 295]
 
-                rospy.loginfo("Pose: {}".format(self.pose))
-                rospy.loginfo("Target: {}".format(target_pose))
-                move_to_target(self, target_pose)
+                while len(frontiers) != 0:
+                    # Visualise frontiers
+                    grid_target = np.ones((384, 384))
+                    for x, y in valid_frontiers:
+                        grid_target[y][x] = 0
+                    grid_target = [[grid_target[y][x] for y in range(len(grid_target))] for x in
+                                   range(len(grid_target[0]) - 1, -1, -1)]
+                    grid_target = np.flip(grid_target, 1)
+                    plt.imshow(grid_target, cmap='hot', interpolation='nearest')
+                    plt.show()
 
-                # self.stop()
+                    # Get closest frontiers (point distance - not path)
+                    current_x_grid, current_y_grid = world_to_occ_grid(self, self.pose.x, self.pose.y)
+                    target = get_closest_frontier(self, current_x_grid, current_y_grid, valid_frontiers)
+                    rospy.loginfo(target)
+                    # Move to target
+                    target_x, target_y = occ_grid_to_world(self, target[0], target[1])
+                    target_pose = Pose2D()
+                    target_pose.x = target_x
+                    target_pose.y = target_y
+                    rospy.loginfo("Target: {}".format(target_pose))
+                    move_to_target(self, target_pose)
+
+                    # Frontiers include the ones outside the arena
+                    frontiers = get_frontiers(self)
+                    # Removing frontiers outside the arena - need to add two sides
+                    valid_frontiers = [point for point in frontiers if point[0] > 165 and point[1] < 295]
             
             
             # Sleep
