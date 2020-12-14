@@ -9,15 +9,15 @@ def get_frontiers(self):
     low = 80
     for y in range(self.occ_grid_info.height):
         for x in range(self.occ_grid_info.width):
-            if self.get_occupancy_grid_value(x, y) == -1:
+            if get_occupancy_grid_value(self, x, y) == -1:
                 continue
-            elif self.get_occupancy_grid_value(x, y) < low and self.exists_unknown_neighbour(x, y):
+            elif get_occupancy_grid_value(self, x, y) < low and exists_unknown_neighbour(self, x, y):
                 frontiers.append((x, y))
     return frontiers
 
 
 def exists_unknown_neighbour(self, x, y):
-    neighbours = self.get_neighbours(x, y).reshape(3, 3)
+    neighbours = get_neighbours(self, x, y).reshape(3, 3)
     neighbours[1, 1] = 0
     if -1 in neighbours:
         return True
