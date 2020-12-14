@@ -16,6 +16,7 @@ import actionlib
 import numpy as np
 import grid_methods as grid
 import tf
+import matplotlib.pyplot as plt
 
 
 class Tour:
@@ -23,26 +24,6 @@ class Tour:
     def __init__(self):
 
         rospy.sleep(1)
-
-        graph = { "a" : ["b"],
-                  "b" : ["a","c"],
-                  "c" : ["b","d"],
-                  "d" : ["c", "e", "k"],
-                  "e" : ["d", "f", "n"],
-                  "f" : ["e", "g"],
-                  "g" : ["f", "h", "j"],
-                  "h" : ["g", "i"],
-                  "i" : ["h", "j"],
-                  "j" : ["g", "i"],
-                  "k" : ["d", "l"],
-                  "l" : ["k", "m"],
-                  "m" : ["l", "n"],
-                  "n" : ["m", "e", "o"],
-                  "o" : ["n", "p", "q"],
-                  "p" : ["o", "q"],
-                  "q" : ["o", "p", "r"],
-                  "r" : ["q"]
-                }
 
         node_locations = {
                   "a" : Point(-1.1, 3.8, 0),
@@ -87,12 +68,12 @@ class Tour:
 
     def get_frontiers(self):
         frontiers = []
-        low = 20  # Need to change this to something that makes sense
+        low = 80  # Need to change this to something that makes sense
         for y in range(self.occ_grid_info.height):
-            for x in range(self.occ_grid_info.height):
+            for x in range(self.occ_grid_info.width):
                 if self.get_occupancy_grid_value(x, y) == -1:
                     continue
-                if self.get_occupancy_grid_value(x, y) < low and self.exists_unknown_neighbour(x, y):
+                elif self.occ_grid[y][x] < low and self.exists_unknown_neighbour(x, y):
                     frontiers.append((x, y))
         return frontiers
 
@@ -117,21 +98,19 @@ class Tour:
         print("\n\n")
 
     def exists_unknown_neighbour(self, x, y):
-        # Remove current cell from neighbours
         neighbours = self.get_neighbours(x, y).reshape(3, 3)
-        neighbours[1,1] = 0
         if -1 in neighbours:
             return True
         else:
             return False
 
-    def get_neighbours(self, row_number, col_number):
+    def get_neighbours(self, col_number, row_number):
         radius = 1
         return np.array(
             [[self.occ_grid[row][col] if row >= 0 and row < len(self.occ_grid) and col >= 0 and col < len(self.occ_grid[0])
               else np.NaN
-              for col in range(col_number - 1 - radius, col_number + radius)]
-             for row in range(row_number - 1 - radius, row_number + radius)]
+              for col in range(col_number - radius, col_number + radius + 1)]
+             for row in range(row_number - radius, row_number + radius + 1)]
         )
 
     def get_closest_frontier(self, current_x, current_y, frontiers):
@@ -143,7 +122,8 @@ class Tour:
         self.goal_status = msg.status.status
 
     def grid_callback(self, msg):
-        self.occ_grid = np.array([-1 for cell in msg.data], dtype=np.int8).reshape(msg.info.height, msg.info.width)
+        occ_grid = np.array([-1 for cell in msg.data], dtype=np.int8).reshape(msg.info.height, msg.info.width)
+        self.occ_grid = occ_grid
         self.occ_grid_info = msg.info
         grid_to_pub = Float32MultiArray()
         grid_to_pub.data = self.occ_grid.flatten()
@@ -185,44 +165,39 @@ class Tour:
         while self.pose is None:
             rospy.loginfo("Waiting for pose to be intiialised.")
 
+        # Frontiers include the ones outside the arena
         frontiers = self.get_frontiers()
-        x_grid, y_grid = self.world_to_occ_grid(self.pose.x, self.pose.y)
-        target = self.get_closest_frontier(x_grid, y_grid, frontiers)
-        target_x, target_y = self.occ_grid_to_world(target[0], target[1])
-        target_pose = Pose2D()
-        target_pose.x = target_x
-        target_pose.y = target_y
+        # Removing frontiers outside the arena - need to add two sides
+        valid_frontiers = [point for point in frontiers if point[0] > 165 and point[1] < 295]
 
-        rospy.loginfo("Pose: {}".format(self.pose))
-        rospy.loginfo("Target: {}".format(target_pose))
-        self.move_to_target(target_pose)
+        while len(frontiers) != 0:
+            # Visualise frontiers
+            grid_target = np.ones((384,384))
+            for x, y in valid_frontiers:
+                grid_target[y][x] = 0
+            grid_target = [[grid_target[j][i] for j in range(len(grid_target))] for i in range(len(grid_target[0]) - 1, -1, -1)]
+            grid_target = np.flip(grid_target, 1)
+            plt.imshow(grid_target, cmap='hot', interpolation='nearest')
+            plt.show()
 
-        print(self.print_grid())
+            # Get closest frontiers (point distance - not path)
+            current_x_grid, current_y_grid = self.world_to_occ_grid(self.pose.x, self.pose.y)
+            target = self.get_closest_frontier(current_x_grid, current_y_grid, valid_frontiers)
+            rospy.loginfo(target)
+            # Move to target
+            target_x, target_y = self.occ_grid_to_world(target[0], target[1])
+            target_pose = Pose2D()
+            target_pose.x = target_x
+            target_pose.y = target_y
+            rospy.loginfo("Target: {}".format(target_pose))
+            self.move_to_target(target_pose)
+
+            # Frontiers include the ones outside the arena
+            frontiers = self.get_frontiers()
+            # Removing frontiers outside the arena - need to add two sides
+            valid_frontiers = [point for point in frontiers if point[0] > 165 and point[0] < 330 and point[1] > 110 and point[1] < 295]
 
 
-    def patrol(self):
-        rospy.loginfo("Start patrol.")
-        # Empty dictionaries {} evaluate to False
-        while len(self.unvisited_nodes) != 0:
-            # Get next node/key
-            node = list(self.unvisited_nodes)[0]
-            target = self.unvisited_nodes.pop(node)
-            rospy.loginfo("Target: {}".format(target))
-
-            # Need to navigate to the target via defined edges
-            self.move_to_target(target)
-
-            self.visited_nodes.append(target)
-
-    # Take the start/end node and existing path. If this is the first
-    # function call, then path = []
-    def find_path(self, graph, start_node, end_node, path):
-        # Add the current start node to the path list.
-        path.append(start_node)
-
-        # Destination is reached, so the entire path is found
-        if start_node == end_node:
-            return path
 
     def move_to_target(self, position):
 
