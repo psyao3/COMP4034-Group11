@@ -15,7 +15,7 @@ from calculator import calculate_linear_distance, calculate_angular_distance, av
 from image_processing import generate_mask, convert_to_hsv, show_image, find_closest_centroid
 from actionlib_msgs.msg import *
 from std_msgs.msg import Float32MultiArray
-
+from frontier_methods import *
 import cv2
 
 ## NOTE: to extract the callbacks from the main class, the data/msg variable is
@@ -197,6 +197,8 @@ def box_callback(data, self):
 
 
 def grid_callback(msg, self):
+    # Initialises the occupancy grid with values of -1 from the global costmap which gets published once
+    # The shape is 384x384
     self.occ_grid = np.array([-1 for cell in msg.data], dtype=np.int8).reshape(msg.info.height, msg.info.width)
     self.occ_grid_info = msg.info
     grid_to_pub = Float32MultiArray()
@@ -205,8 +207,11 @@ def grid_callback(msg, self):
 
 
 def update_callback(msg, self):
+    # Updates the occupancy grid with the values obtained in the update
+    # The update is a subset of the global costmap
     update = np.array(msg.data, dtype=np.int8).reshape(msg.height, msg.width)
     self.occ_grid[msg.y:msg.y + msg.height, msg.x:msg.x + msg.width] = update
+    # Creates a float array to publish the map on the /occ_grid topic
     grid_to_pub = Float32MultiArray()
     grid_to_pub.data = self.occ_grid.flatten()
     self.occ_grid_publisher.publish(grid_to_pub)

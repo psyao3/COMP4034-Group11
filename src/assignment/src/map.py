@@ -5,6 +5,7 @@ import numpy as np
 from std_msgs.msg import Float32MultiArray
 from math import sqrt
 import matplotlib.pyplot as plt
+import cv2
 
 
 class MapListener:
@@ -19,12 +20,19 @@ class MapListener:
         # length = len(msg.data)
         # sqrt_len = sqrt(length)
         self.print_heatmap(np.asarray(msg.data).reshape((384, 384)))
+        # self.print_image(np.asarray(msg.data).reshape((384, 384)))
 
     def print_heatmap(self, occ_grid):
         occ_grid = [[occ_grid[j][i] for j in range(len(occ_grid))] for i in range(len(occ_grid[0]) - 1, -1, -1)]
         occ_grid = np.flip(occ_grid, 1)
         plt.imshow(occ_grid, cmap='hot', interpolation='nearest')
         plt.show()
+
+    def print_image(self, occ_grid):
+        occ_grid = [[occ_grid[j][i] for j in range(len(occ_grid))] for i in range(len(occ_grid[0]) - 1, -1, -1)]
+        occ_grid = np.flip(occ_grid, 1)
+        cv2.imshow("Occupancy Grid", occ_grid)
+        cv2.waitKey(3)
 
     def print_grid(self, occ_grid):
         # To scale it down to 20x20 I need a 400x400 matrix
