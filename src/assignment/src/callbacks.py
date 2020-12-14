@@ -23,10 +23,23 @@ import cv2
 # in second. This is because self needs to be passed in as an extra parameter
 # when creating the subscriber, rather than calling self.callback.
      
+# Updates the number of bounding boxes currently seen     
+def count_boxes_callback(msg, self):
+    self.box_count = msg.count
     
 
 
 def box_callback(data, self):
+
+    # If box_count is 0, it means no new targets found,
+    # reset variables and return early. 
+    if self.box_count == 0:
+        rospy.loginfo("No target found, resetting values.")
+        self.is_target = False
+        self.current_tgt_class = None
+        self.goal_x = None
+        self.goal_y = None
+        return
 
     # We need to ignore targets or boxes belonging to a class
     # we've already found.
@@ -40,16 +53,10 @@ def box_callback(data, self):
         if box.Class not in ignore:
             boxes.append(box)
 
-    # If boxes is still empty, it means no new targets found,
-    # set variables and return early. (empty list is false)
-    if not boxes:
-        self.is_target = False
-        self.current_tgt_class = None
-        return
-
+   
 
     # Break after variables set.
-    for box in data.bounding_boxes:
+    for box in boxes:
        
         # Get the class
         obj_class = box.Class

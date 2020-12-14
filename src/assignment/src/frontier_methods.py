@@ -2,24 +2,27 @@ import numpy as np
 from math import sqrt
 import rospy
 from geometry_msgs.msg import PoseStamped
+from actionlib_msgs.msg import *
+from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 
+import actionlib
 
 def get_frontiers(self):
     frontiers = []
-    low = 70
+    low = 80
     for y in range(self.occ_grid_info.height):
         for x in range(self.occ_grid_info.width):
             if get_occupancy_grid_value(self, x, y) == -1:
                 continue
             elif get_occupancy_grid_value(self, x, y) < low and exists_unknown_neighbour(self, x, y):
-                #rospy.loginfo(get_neighbours(self, x, y))
                 frontiers.append((x, y))
-                #rospy.sleep(0.3)
+    rospy.loginfo("Length of frontiers: %i" % len(frontiers))
     return frontiers
 
 
 def exists_unknown_neighbour(self, x, y):
     neighbours = get_neighbours(self, x, y).reshape(3, 3)
+    neighbours[1, 1] = 0
     if -1 in neighbours:
         return True
     else:
@@ -40,6 +43,7 @@ def get_neighbours(self, col_number, row_number):
 def get_closest_frontier(self, current_x, current_y, frontiers):
     current_pos = (current_x, current_y)
     sorted_frontiers = sorted(frontiers, key=lambda v: sqrt(pow((v[0] - current_pos[0]), 2) + pow((v[1] - current_pos[1]), 2)))
+    rospy.loginfo("Length of sorted frontiers: %i" % len(sorted_frontiers))
     return sorted_frontiers[0]
 
 
@@ -81,7 +85,41 @@ def move_to_target(self, position):
         rospy.sleep(1)
 
     while self.goal_status != 3:
+        self.goal_publisher.publish(goal)
+
         pass
 
     rospy.loginfo("The robot has reached the destination.")
     return True
+
+def move_to_target_alt(self, position):
+    client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
+
+    while not client.wait_for_server(rospy.Duration.from_sec(5.0)):
+        rospy.loginfo("Waiting for the move_base action server")
+
+    goal = MoveBaseGoal()
+
+    # important because "map" defines we are using map coordinates 
+    # and not coordinates relative to the robot
+    goal.target_pose.header.frame_id = "map"
+    goal.target_pose.header.stamp = rospy.Time.now()
+
+    #set positions of the goal location
+    goal.target_pose.pose.position = position
+    goal.target_pose.pose.orientation.x = 0.0
+    goal.target_pose.pose.orientation.y = 0.0
+    goal.target_pose.pose.orientation.z = 0.0
+    goal.target_pose.pose.orientation.w = 1.0
+
+    rospy.loginfo("Sending goal location")
+    client.send_goal(goal)
+
+    client.wait_for_result(rospy.Duration(40))
+    
+    if (client.get_state() ==  GoalStatus.SUCCEEDED):
+        rospy.loginfo("You have reached the destination")
+        return True
+    else:
+        rospy.loginfo("The robot failed to reach the destination or interrupted.")
+        return False
