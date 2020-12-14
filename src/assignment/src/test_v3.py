@@ -167,7 +167,8 @@ class Follower:
                 # Frontiers include the ones outside the arena
                 frontiers = get_frontiers(self)
                 # Removing frontiers outside the arena - need to add two sides
-                valid_frontiers = [point for point in frontiers if point[0] > 165 and point[1] < 295]
+                # point[0] is x and point[1] is y
+                valid_frontiers = [point for point in frontiers if point[0] > 165 and point[0] < 330 and point[1] > 110 and point[1] < 295]
 
                 while len(frontiers) != 0:
                     # Visualise frontiers
