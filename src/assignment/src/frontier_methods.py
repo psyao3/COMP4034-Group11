@@ -6,26 +6,27 @@ from geometry_msgs.msg import PoseStamped
 
 def get_frontiers(self):
     frontiers = []
-    low = 80
+    low = 70
     for y in range(self.occ_grid_info.height):
         for x in range(self.occ_grid_info.width):
             if get_occupancy_grid_value(self, x, y) == -1:
                 continue
             elif get_occupancy_grid_value(self, x, y) < low and exists_unknown_neighbour(self, x, y):
+                #rospy.loginfo(get_neighbours(self, x, y))
                 frontiers.append((x, y))
+                #rospy.sleep(0.3)
     return frontiers
 
 
 def exists_unknown_neighbour(self, x, y):
     neighbours = get_neighbours(self, x, y).reshape(3, 3)
-    neighbours[1, 1] = 0
     if -1 in neighbours:
         return True
     else:
         return False
 
 
-def get_neighbours(self, row_number, col_number):
+def get_neighbours(self, col_number, row_number):
     # Get the 9 cells surrounding and including the current one
     radius = 1
     return np.array(
