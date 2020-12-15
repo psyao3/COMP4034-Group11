@@ -99,6 +99,7 @@ class Follower:
         self.scan_sub = rospy.Subscriber("/scan", LaserScan, scan_callback, (self))
 
         #self.frontier_pub = rospy.Publisher('/frontier', Float32MultiArray, queue_size=1)
+        self.frontier_pub = rospy.Publisher('/frontier', OccupancyGrid, queue_size=1)
 
         # Subscriber to get the move_base result
         rospy.Subscriber('move_base/result', MoveBaseActionResult, status_callback, (self))
@@ -204,7 +205,8 @@ class Follower:
         while len(frontiers) != 0 and not self.is_target:
            
             # Visualise frontiers
-            self.visualize_frontiers(frontiers)         
+            self.visualize_frontiers(frontiers)
+            self.publish_frontiers(frontiers)
 
             # Get closest frontiers (point distance - not path)
             target_x, target_y = get_closest_frontier(self, self.pose.x, self.pose.y, frontiers)
@@ -231,15 +233,31 @@ class Follower:
     # Function to display frontiers in maplotlib plot.
     # No clue whats going on here......
     def visualize_frontiers(self, frontiers):
+        # Initialise a 384x384 grid full of ones
         grid_target = np.ones((384, 384))
+        # For each point in the frontiers change the value of grid_target to 0
         for x, y in frontiers:
             grid_target[y][x] = 0
+        # Rotate the grid by 90 degrees
         grid_target = [[grid_target[y][x] for y in range(len(grid_target))] for x in
                         range(len(grid_target[0]) - 1, -1, -1)]
+        # Flip the grid along the vertical axis to match rviz
         grid_target = np.flip(grid_target, 1)
-
+        # Plot Image
         plt.imshow(grid_target, cmap='hot', interpolation='nearest')
         plt.show()
+
+    def publish_frontiers(self, frontiers):
+        # Initialise a 384x384 grid full of ones
+        grid_target = np.zeros((384, 384))
+        # For each point in the frontiers change the value of grid_target to 0
+        for x, y in frontiers:
+            grid_target[y][x] = 100
+        # Publish the frontiers
+        frontiers_msg = OccupancyGrid()
+        frontiers_msg.info = self.occ_grid_info
+        frontiers_msg.data = np.asarray(grid_target).reshape(-1).astype(int)
+        self.frontier_pub.publish(frontiers_msg)
 
     # For printing stats at the end of a run for evaluation.
     def evaluate(self):
