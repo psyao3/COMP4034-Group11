@@ -67,6 +67,9 @@ class Follower:
         # Keep track of targets that have been reached.
         self.complete = []
 
+        # List of frontiers to ignore
+        self.ignore_frontiers = []
+
         # For number 5 special case
         self.box_height = None 
         self.box_width = None
@@ -214,6 +217,10 @@ class Follower:
                 # Assume the frontier is unreachable and ignore it in future.
                 rospy.loginfo("Could not reach frontier - trying elsewhere.")
                 # TODO: figure this out
+                # Find frontiers adjacent to the target point
+                grid_x, grid_y = world_to_occ_grid(self, target_x, target_y)
+                update_unreachable_frontiers(self, (grid_x, grid_y), frontiers)
+                
 
 
             # Frontiers include the ones outside the arena

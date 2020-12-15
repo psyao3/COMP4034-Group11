@@ -30,6 +30,11 @@ def get_frontiers(self):
     if len(frontiers) == 0:
         rospy.loginfo("Check occupancy grid. -1:{}, size:{}".format(-1 in self.occ_grid, len(self.occ_grid)))
         rospy.loginfo("Check occupancy grid. 0:{}, unique:{}".format(0 in self.occ_grid, np.unique(self.occ_grid)))
+
+
+    # Exclude unreachable frontiers in case a previous move_base goal failed
+    frontiers = [f for f in frontiers if f not in self.ignore_frontiers]    
+    
     return frontiers
 
 # Checks neighbours for a given [y][x] occupancy grid position
@@ -103,6 +108,48 @@ def world_to_occ_grid(self, world_x, world_y):
     grid_y = int(round((world_y - self.occ_grid_info.origin.position.y) / self.occ_grid_info.resolution))
     return grid_x, grid_y
 
+# Takes the grid co-ordinates of an unreachable frontier (move_base goal failed)
+# and returns a list of adjacent frontier cells
+
+def update_unreachable_frontiers(self, pos_xy, frontiers):
+    
+    # Get neighbours of this cell depending on radius
+    radius = 100
+    pos_x = pos_xy[0]
+    pos_y = pos_xy[1]
+
+    for x in range(pos_x - radius, pos_x + radius, 1):
+        for y in range(pos_y - radius, pos_y + radius, 1):
+            if x >=0 and y >=0 and x <= len(self.occ_grid) and y <= len(self.occ_grid[0]) and (x, y) in frontiers and (x, y) not in self.ignore_frontiers:
+                self.ignore_frontiers.append((x, y))
+
+    
+
+'''def update_unreachable_frontiers(self, pos_xy, frontiers):
+  
+    # Get neighbours of this cell
+
+    radius = 1
+    pos_x = pos_xy[0]
+    pos_y = pos_xy[1]
+
+    neighbours = []
+    for x in range(pos_x - 1, pos_x + 1, 1):
+        for y in range(pos_y - 1, pos_y + 1, 1):
+            if x >=0 and y >=0 and x <= len(self.occ_grid) and y <= len(self.occ_grid[0]):
+                neighbours.append((x, y))
+
+    print neighbours
+
+    # Iterate neighbours, if it is in frontiers and not already ignored, add it to the ignore list recursively.
+    for n in neighbours:
+        if n in frontiers and n not in self.ignore_frontiers:
+            self.ignore_frontiers.append(n)
+            update_unreachable_frontiers(self, n, frontiers)
+            
+    return '''
+
+
 
 # This was used as the action client server didn't work for some reason originally.
 def move_to_target(self, position):
@@ -159,7 +206,7 @@ def move_to_target_alt(self, position):
     rospy.loginfo("Sending goal location")
     client.send_goal(goal)
 
-    client.wait_for_result(rospy.Duration(40))
+    client.wait_for_result(rospy.Duration(15))
 
     if (client.get_state() ==  GoalStatus.SUCCEEDED):
         rospy.loginfo("You have reached the destination")
