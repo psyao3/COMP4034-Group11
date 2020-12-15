@@ -12,11 +12,10 @@ from sensor_msgs.msg import Image, PointCloud2, LaserScan
 from darknet_ros_msgs.msg import BoundingBoxes
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from calculator import calculate_linear_distance, calculate_angular_distance, average_distance
-from image_processing import generate_mask, convert_to_hsv, show_image, find_closest_centroid
 from actionlib_msgs.msg import *
 from std_msgs.msg import Float32MultiArray
 from frontier_methods import *
-import cv2
+
 
 ## NOTE: to extract the callbacks from the main class, the data/msg variable is
 # now the first parameter, and 'self' (the instance of the main class) is passed
@@ -38,16 +37,6 @@ def count_boxes_callback(msg, self):
 
 
 def box_callback(data, self):
-
-    # If box_count is 0, it means no new targets found,
-    # reset variables and return early. 
-    if self.box_count == 0:
-        #rospy.loginfo("No target found, resetting values.")
-        self.is_target = False
-        self.current_tgt_class = None
-        self.goal_x = None
-        self.goal_y = None
-        return
 
     # We need to ignore targets or boxes belonging to a class
     # we've already found.
@@ -121,7 +110,7 @@ def scan_callback(msg, self):
     self.ranges = np.array(msg.ranges)
 
     obst_dists = []
-    for i in range(-45, 45, 8):
+    for i in range(-60, 60, 10):
         obst_dists.append(average_distance(self.ranges, i, 8))
 
     self.right_obst = min(obst_dists[0:5])

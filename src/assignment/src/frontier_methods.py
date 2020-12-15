@@ -114,13 +114,13 @@ def world_to_occ_grid(self, world_x, world_y):
 def update_unreachable_frontiers(self, pos_xy, frontiers):
     
     # Get neighbours of this cell depending on radius
-    radius = 100
+    radius = 30
     pos_x = pos_xy[0]
     pos_y = pos_xy[1]
 
-    for x in range(pos_x - radius, pos_x + radius, 1):
-        for y in range(pos_y - radius, pos_y + radius, 1):
-            if x >=0 and y >=0 and x <= len(self.occ_grid) and y <= len(self.occ_grid[0]) and (x, y) in frontiers and (x, y) not in self.ignore_frontiers:
+    for x in range(pos_x - radius, pos_x + radius + 1, 1):
+        for y in range(pos_y - radius, pos_y + radius + 1, 1):
+            if x >=0 and y >=0 and x <= len(self.occ_grid) and y <= len(self.occ_grid[0]) and (x, y) not in self.ignore_frontiers:
                 self.ignore_frontiers.append((x, y))
 
     

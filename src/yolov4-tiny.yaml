@@ -3,7 +3,7 @@ yolo_model:
   config_file:
     name: yolov4-tiny.cfg
   weight_file:
-    name: alex_final.weights
+    name: yolov4-tiny_best.weights
   threshold:
     value: 0.8
   detection_classes:
@@ -12,3 +12,4 @@ yolo_model:
       - mailbox
       - number 5
       - green box
+      - mailbox legs
