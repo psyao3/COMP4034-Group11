@@ -26,7 +26,15 @@ import cv2
 # Updates the number of bounding boxes currently seen     
 def count_boxes_callback(msg, self):
     self.box_count = msg.count
-    
+
+    if self.box_count == 0:
+        #rospy.loginfo("No target found, resetting values.")
+        self.is_target = False
+        self.current_tgt_class = None
+        self.goal_x = None
+        self.goal_y = None
+        return
+
 
 
 def box_callback(data, self):
@@ -34,7 +42,7 @@ def box_callback(data, self):
     # If box_count is 0, it means no new targets found,
     # reset variables and return early. 
     if self.box_count == 0:
-        rospy.loginfo("No target found, resetting values.")
+        #rospy.loginfo("No target found, resetting values.")
         self.is_target = False
         self.current_tgt_class = None
         self.goal_x = None
@@ -95,21 +103,6 @@ def box_callback(data, self):
         # Break loop now we have target
         break
 
-#def image_callback(msg, self):
-
-    #hsv = convert_to_hsv(msg, self.bridge)
-    #image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
-   # cv2.imshow("fig", image)
-    #cv2.waitKey(1)
-    #mask = generate_mask(hsv)
-
-    #target = cv2.bitwise_and(hsv, hsv, mask=mask)
-    #show_image(mask=mask, masked_image=target)
-
-    # Label objects in image (0 is background), matrix of labels and stats
-    #num_targets, labels, stats, centroids = cv2.connectedComponentsWithStats(mask)
-
-    #threshold = 0.5
 
 
 def odom_callback(msg, self):
@@ -121,6 +114,7 @@ def odom_callback(msg, self):
         self.pose.theta = yaw
         self.pose.x = msg.pose.pose.position.x
         self.pose.y = msg.pose.pose.position.y
+       #rospy.loginfo("Odom positon: %f, %f" % (self.pose.x, self.pose.y))
 
        
 def scan_callback(msg, self):

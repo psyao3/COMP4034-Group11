@@ -2,7 +2,7 @@
 
 import rospy
 from sensor_msgs.msg import Image, PointCloud2
-from std_msgs.msg import Float32MultiArray
+from std_msgs.msg import Float32MultiArray, MultiArrayLayout, MultiArrayDimension
 from geometry_msgs.msg import Twist, Pose2D, Point, PoseStamped
 from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import Odometry, OccupancyGrid
@@ -32,7 +32,7 @@ class Follower:
 
     def __init__(self):
 
-        # Initialising rospy behaviour
+        # Initialising rospy behaviournp
         rospy.on_shutdown(self.stop)
         self.rate = rospy.Rate(10)  # Hz
 
@@ -43,7 +43,7 @@ class Follower:
         # Occupancy grid initialisation
         self.occ_grid = None
         self.occ_grid_info = None
-
+        self.occ_threshold = 60 # Threshold for obstacle probability; so that frontiers are only considered if below this value.
         # Pose for odom
         self.pose = Pose2D()
 
@@ -95,6 +95,8 @@ class Follower:
         self.odom_sub = rospy.Subscriber('/odom', Odometry, odom_callback, (self))
         self.scan_sub = rospy.Subscriber("/scan", LaserScan, scan_callback, (self))
 
+        #self.frontier_pub = rospy.Publisher('/frontier', Float32MultiArray, queue_size=1)
+
         # Subscriber to get the move_base result
         rospy.Subscriber('move_base/result', MoveBaseActionResult, status_callback, (self))
         # Subsribers for occupancy grids - global costmap and updates
@@ -131,12 +133,12 @@ class Follower:
             # Check if target reached
             # IF the bottom of the bounding box (goal_y) is close to the bottom
             # of the camera view in pixels (>1080 * 0.8), then object reached.
-
+            #self.explore()
             # FOR NUMBER 5 ONLY:
             # If the box width is 1.5 * box height, goal reached. May need to tweak
             # this, but chose this based on observed box behaviour when closing in on
             # the number 5 object.
-            if self.is_target and (self.goal_y >= h * 0.8 or 
+            if self.is_target and (self.goal_y >= h * 0.75 or 
              ((self.current_tgt_class == "number 5") and 
              (self.box_width > 1.5 * self.box_height))):
                 # Stop
@@ -151,6 +153,11 @@ class Follower:
                 rospy.loginfo("Stopping.")
                 rospy.loginfo(self.complete) # Print obstacles found so far
 
+                # Sleep so it doesn't beacon to another target immediately (noticed with fire extinguisher/mailbox)
+                rospy.sleep(1.5)
+
+                # Explore here
+                self.explore()
 
             # If theres an obstacle closer than threshold (0.5) do obstacle avoidance
             elif self.closest_obstacle <= 0.3:
@@ -162,51 +169,8 @@ class Follower:
                 self.rate.sleep()   
 
             else:
-
-                ### I think a 360 degree spin should go here, before frontier exploration.
-
-                '''
-                Frontier Exploration logic
-                '''
-                rospy.loginfo("Start exploration.")
-
-                while self.pose is None:
-                    rospy.loginfo("Waiting for pose to be initialised.")
-
-                # Frontiers include the ones outside the arena
-                frontiers = get_frontiers(self)
-                # Removing frontiers outside the arena - need to add two sides
-                # point[0] is x and point[1] is y
-                valid_frontiers = [point for point in frontiers if point[0] > 165 and point[0] < 330 and point[1] > 110 and point[1] < 295]
-
-                while len(frontiers) != 0 and not self.is_target:
-                    # Visualise frontiers
-                    grid_target = np.ones((384, 384))
-                    for x, y in valid_frontiers:
-                        grid_target[y][x] = 0
-                    grid_target = [[grid_target[y][x] for y in range(len(grid_target))] for x in
-                                   range(len(grid_target[0]) - 1, -1, -1)]
-                    grid_target = np.flip(grid_target, 1)
-                    plt.imshow(grid_target, cmap='hot', interpolation='nearest')
-                    plt.show()
-
-                    # Get closest frontiers (point distance - not path)
-                    current_x_grid, current_y_grid = world_to_occ_grid(self, self.pose.x, self.pose.y)
-                    target = get_closest_frontier(self, current_x_grid, current_y_grid, valid_frontiers)
-                    rospy.loginfo(target)
-                    # Move to target
-                    target_x, target_y = occ_grid_to_world(self, target[0], target[1])
-                    target_pose = Pose2D()
-                    target_pose.x = target_x
-                    target_pose.y = target_y
-                    target_point = Point(target_x, target_y, 0)
-                    rospy.loginfo("Target: {}".format(target_pose))
-                    move_to_target_alt(self, target_point)
-
-                    # Frontiers include the ones outside the arena
-                    frontiers = get_frontiers(self)
-                    # Removing frontiers outside the arena - need to add two sides
-                    valid_frontiers = [point for point in frontiers if point[0] > 165 and point[1] < 295]
+                # Frontier exploration.
+                self.explore()
             
             
             # Sleep
@@ -217,12 +181,66 @@ class Follower:
         self.evaluate()
 
 
+
+    # Code to perform frontier exploration algorithm. Gets the frontiers, then gets the closest,
+    # and then performs a move_base command to move to it. Gets interrupted if a target is spotted
+    # by the box_callback.
+    def explore(self):
+
+        '''
+        Frontier Exploration logic
+        '''
+        rospy.loginfo("Start exploration.")
+
+        while self.pose is None:
+            rospy.loginfo("Waiting for pose to be initialised.")
+
+        # Frontiers include the ones outside the arena
+        frontiers = get_frontiers(self)
+       
+        while len(frontiers) != 0 and not self.is_target:
+           
+            # Visualise frontiers
+            self.visualize_frontiers(frontiers)         
+
+            # Get closest frontiers (point distance - not path)
+            target_x, target_y = get_closest_frontier(self, self.pose.x, self.pose.y, frontiers)
+           
+            # Move to target
+            target_point = Point(target_x, target_y, 0)
+            rospy.loginfo("Target: {}".format(target_point))
+
+            if not move_to_target_alt(self, target_point):
+                # Assume the frontier is unreachable and ignore it in future.
+                rospy.loginfo("Could not reach frontier - trying elsewhere.")
+                # TODO: figure this out
+
+
+            # Frontiers include the ones outside the arena
+            frontiers = get_frontiers(self)
+         
+
+   
+    # Function to display frontiers in maplotlib plot.
+    # No clue whats going on here......
+    def visualize_frontiers(self, frontiers):
+        grid_target = np.ones((384, 384))
+        for x, y in frontiers:
+            grid_target[y][x] = 0
+        grid_target = [[grid_target[y][x] for y in range(len(grid_target))] for x in
+                        range(len(grid_target[0]) - 1, -1, -1)]
+        grid_target = np.flip(grid_target, 1)
+
+        plt.imshow(grid_target, cmap='hot', interpolation='nearest')
+        plt.show()
+
+    # For printing stats at the end of a run for evaluation.
     def evaluate(self):
 
         run_time = rospy.get_rostime() - self.start_time
 
         rospy.loginfo("Statistics of this run:")
-        rospy.loginfo("Runtime in seconds: %f" % run_time)
+        rospy.loginfo("Runtime in seconds: %f" % run_time.to_sec())
         rospy.loginfo("Targets found: %d" % len(self.complete))
         rospy.loginfo(self.complete) # The targets
 
@@ -234,37 +252,31 @@ class Follower:
         '''
 
 
-
+    # Adapted obstacle avoidance from previous tasks.
     def obstacle_avoidance(self, threshold):
-        # TODO: This is just copied from elsewhere
-        # Needs refactoring though
+     
         twist_msg = Twist()
+        # If obstacle both sides, turn 90 degrees to try and clear both.
         if self.left_obst <= threshold and self.right_obst <= threshold:
             rospy.loginfo("Obstacle left and right; Turning 90 degrees")
-            self.state = 'Obstacle'
             twist_msg.angular.z = math.pi/3
             self.pub.publish(twist_msg)
-            self.beginning_of_random_walk = True
             rospy.sleep(1.5)
-            # 90 degrees
+            return
+        # Turn away from a left obstacle
         elif self.left_obst <= threshold:
             rospy.loginfo("Obstacle left; Turning clockwise")
-            self.state = 'Obstacle'
             twist_msg.angular.z = -self.angular_speed
-            self.pub.publish(twist_msg)
-            self.beginning_of_random_walk = True
+        # Turn away from a right obstacle
         elif self.right_obst <= threshold:
             rospy.loginfo("Obstacle right; Turning anticlockwise")
-            self.state = 'Obstacle'
             twist_msg.angular.z = self.angular_speed
-            self.pub.publish(twist_msg)
-            self.beginning_of_random_walk = True
+        # Turn way from an obstacle directly in front.
         elif self.front_obst <= threshold:
             rospy.loginfo("Obstacle ahead; Turning anticlockwise")
-            self.state = 'Obstacle'
             twist_msg.angular.z = self.angular_speed
-            self.pub.publish(twist_msg)
-            self.beginning_of_random_walk = True
+
+        self.pub.publish(twist_msg)
 
     # Beacon towards target object based on goal_x value.
     def beacon_to_target(self):
@@ -281,7 +293,8 @@ class Follower:
 
         # Construct twist message and publish it
         twist_msg = Twist()
-        twist_msg.linear.x = self.linear_speed
+        #twist_msg.linear.x = self.linear_speed
+        twist_msg.linear.x = min(self.linear_speed * self.closest_obstacle, self.linear_speed)
         twist_msg.angular.z = -float(err) / 400
 
         rospy.loginfo("Beaconing towards " + self.current_tgt_class)
