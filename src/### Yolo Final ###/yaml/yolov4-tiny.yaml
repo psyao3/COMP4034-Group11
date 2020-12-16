@@ -1,0 +1,15 @@
+yolo_model:
+
+  config_file:
+    name: final_cfg.cfg
+  weight_file:
+    name: final_weights.weights
+  threshold:
+    value: 0.8
+  detection_classes:
+    names:
+      - fire hydrant
+      - mailbox
+      - number 5
+      - green box
+      - mailbox legs

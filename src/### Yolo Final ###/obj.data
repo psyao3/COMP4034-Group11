@@ -1,0 +1,5 @@
+classes = 5
+train  = data/Custom/train.txt
+valid  = data/Custom/test.txt
+names =  data/Custom/classes.names
+backup = backup/

@@ -1,0 +1,37 @@
+
+CHANGES.
+
+#######################################################################
+
+final_weights.weights are from somewhere between 3000 -> 4000 epochs 
+
+yolov4-tiny_3000.weights -> "created at 02:02"
+yolov4-tiny_best -> "created at 02:06"
+yolov4-tiny_4000.weights -> "created at 02:17"
+
+^therefore I assume its around 3200/3300 epochs
+
+#######################################################################
+
+final_cfg.cfg has been modified as follows:
+
+width = 640
+height = 640    //this increase the precision for smaller objects such as the mailbox legs
+		but reduced the accuracy of the other objects, this tradeoff was worth it tho
+		since with the previous input size of 608x608 the mailbox legs were extremely
+		low around 40% accuracy.
+
+		however, the other object went from 99% -> 98~88%, which is enough for our needs
+
+#######################################################################
+
+the dataset has been increased to 2,253 images, with ~750 images taken within gazebo and the
+remaining from the MIT Indoor Scenes dataset Link: https://www.kaggle.com/itsahmad/indoor-scenes-cvpr-2019
+
+Allowed me to get enough negative images without the time consuming and soul draining screen capturing
+from gazebo. It may have introduced some noise/dirty data into the model but that is within reason
+of the assignment. Hence the graph looks kinda crazy and not smooth like the previous models.
+
+But it performs the best!!!
+
+#######################################################################

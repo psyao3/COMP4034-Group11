@@ -1,0 +1,450 @@
+/home/victor/darknet/data/dataset/images/museo_23_04_altavista.png
+/home/victor/darknet/data/dataset/images/New_Conference_Room.png
+/home/victor/darknet/data/dataset/images/airport_inside_0334.png
+/home/victor/darknet/data/dataset/images/airport_inside_0353.png
+/home/victor/darknet/data/dataset/images/museum_46_17_altavista.png
+/home/victor/darknet/data/dataset/images/airport_inside_0545.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (19).png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (18).png
+/home/victor/darknet/data/dataset/images/pasillo2_c.png
+/home/victor/darknet/data/dataset/images/corridora1.png
+/home/victor/darknet/data/dataset/images/meeting2.png
+/home/victor/darknet/data/dataset/images/conf22.png
+/home/victor/darknet/data/dataset/images/airport_inside_0267.png
+/home/victor/darknet/data/dataset/images/museo_161_19_flickr.png
+/home/victor/darknet/data/dataset/images/airport_inside_0373.png
+/home/victor/darknet/data/dataset/images/green_box_img_55.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (99).png
+/home/victor/darknet/data/dataset/images/museum_41_03_altavista.png
+/home/victor/darknet/data/dataset/images/be158920.png
+/home/victor/darknet/data/dataset/images/airport_inside_0425.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (155).png
+/home/victor/darknet/data/dataset/images/airport_inside_0112.png
+/home/victor/darknet/data/dataset/images/multi_obj (18).png
+/home/victor/darknet/data/dataset/images/airport_inside_0244.png
+/home/victor/darknet/data/dataset/images/airport_inside_0152.png
+/home/victor/darknet/data/dataset/images/Single_warders_corridor_6.png
+/home/victor/darknet/data/dataset/images/Salle_reunion2.png
+/home/victor/darknet/data/dataset/images/Corridor79.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (14).png
+/home/victor/darknet/data/dataset/images/pictureb_waitingroom.png
+/home/victor/darknet/data/dataset/images/airport_inside_0420.png
+/home/victor/darknet/data/dataset/images/sigmund_freud_museum11.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (72).png
+/home/victor/darknet/data/dataset/images/Tuinh_Int_01.png
+/home/victor/darknet/data/dataset/images/airport_inside_0073.png
+/home/victor/darknet/data/dataset/images/room111.png
+/home/victor/darknet/data/dataset/images/south_hallway_from_front_c.png
+/home/victor/darknet/data/dataset/images/airport_inside_0401.png
+/home/victor/darknet/data/dataset/images/mailbox (17).png
+/home/victor/darknet/data/dataset/images/multi_obj (2).png
+/home/victor/darknet/data/dataset/images/airport_inside_0495.png
+/home/victor/darknet/data/dataset/images/waiting_ig.png
+/home/victor/darknet/data/dataset/images/airport_inside_0258.png
+/home/victor/darknet/data/dataset/images/room496.png
+/home/victor/darknet/data/dataset/images/airport_inside_0477.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (101).png
+/home/victor/darknet/data/dataset/images/airport_inside_0183.png
+/home/victor/darknet/data/dataset/images/airport_inside_0062.png
+/home/victor/darknet/data/dataset/images/airport_inside_0016.png
+/home/victor/darknet/data/dataset/images/multi_obj (6).png
+/home/victor/darknet/data/dataset/images/green_box_img_99.png
+/home/victor/darknet/data/dataset/images/conference1.png
+/home/victor/darknet/data/dataset/images/airport_inside_0206.png
+/home/victor/darknet/data/dataset/images/airport_inside_0307.png
+/home/victor/darknet/data/dataset/images/airport_inside_0543.png
+/home/victor/darknet/data/dataset/images/Large_Meeting_Room_sized_down.png
+/home/victor/darknet/data/dataset/images/pasilltmpo_t.png
+/home/victor/darknet/data/dataset/images/airport_inside_0182.png
+/home/victor/darknet/data/dataset/images/n457020.png
+/home/victor/darknet/data/dataset/images/number_5 (99).png
+/home/victor/darknet/data/dataset/images/room452.png
+/home/victor/darknet/data/dataset/images/green_box_img_42.png
+/home/victor/darknet/data/dataset/images/mailbox (87).png
+/home/victor/darknet/data/dataset/images/003.png
+/home/victor/darknet/data/dataset/images/71_full.png
+/home/victor/darknet/data/dataset/images/AWMG_Waiting.png
+/home/victor/darknet/data/dataset/images/negavtive_img_25.png
+/home/victor/darknet/data/dataset/images/corridora5.png
+/home/victor/darknet/data/dataset/images/airport_inside_0484.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (167).png
+/home/victor/darknet/data/dataset/images/airport_inside_0274.png
+/home/victor/darknet/data/dataset/images/airport_inside_0192.png
+/home/victor/darknet/data/dataset/images/airport_inside_0234.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_00010.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (51).png
+/home/victor/darknet/data/dataset/images/museum_10_11_flickr.png
+/home/victor/darknet/data/dataset/images/fire_hydrant (91).png
+/home/victor/darknet/data/dataset/images/fire_hydrant (77).png
+/home/victor/darknet/data/dataset/images/IMG_9681.png
+/home/victor/darknet/data/dataset/images/waitingroom_big.png
+/home/victor/darknet/data/dataset/images/fire_hydrant (19).png
+/home/victor/darknet/data/dataset/images/link_corridor.png
+/home/victor/darknet/data/dataset/images/number_5 (95).png
+/home/victor/darknet/data/dataset/images/PatientWaitingRoom.png
+/home/victor/darknet/data/dataset/images/mailbox (89).png
+/home/victor/darknet/data/dataset/images/green_box (2).png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (63).png
+/home/victor/darknet/data/dataset/images/green_box_img_90.png
+/home/victor/darknet/data/dataset/images/waiting_room_01_09_altavista.png
+/home/victor/darknet/data/dataset/images/waitingroom02.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (114).png
+/home/victor/darknet/data/dataset/images/central_meeting_room.png
+/home/victor/darknet/data/dataset/images/museum_116_08_flickr.png
+/home/victor/darknet/data/dataset/images/multi_obj (20).png
+/home/victor/darknet/data/dataset/images/museum_149_07_flickr.png
+/home/victor/darknet/data/dataset/images/airport_inside_0302.png
+/home/victor/darknet/data/dataset/images/airport_inside_0305.png
+/home/victor/darknet/data/dataset/images/negavtive_img_2.png
+/home/victor/darknet/data/dataset/images/airport_inside_0508.png
+/home/victor/darknet/data/dataset/images/airport_inside_0569.png
+/home/victor/darknet/data/dataset/images/waiting_room03.png
+/home/victor/darknet/data/dataset/images/airport_inside_0551.png
+/home/victor/darknet/data/dataset/images/airport_inside_0288.png
+/home/victor/darknet/data/dataset/images/coll_couloir.png
+/home/victor/darknet/data/dataset/images/corridor_1.png
+/home/victor/darknet/data/dataset/images/salle_d_attente.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_00046.png
+/home/victor/darknet/data/dataset/images/patient_waiting_room.png
+/home/victor/darknet/data/dataset/images/number_5 (70).png
+/home/victor/darknet/data/dataset/images/number_5 (83).png
+/home/victor/darknet/data/dataset/images/multi_obj (19).png
+/home/victor/darknet/data/dataset/images/Locker_Commons.png
+/home/victor/darknet/data/dataset/images/fire_hydrant (81).png
+/home/victor/darknet/data/dataset/images/airport_inside_0482.png
+/home/victor/darknet/data/dataset/images/airport_inside_0072.png
+/home/victor/darknet/data/dataset/images/corridor55.png
+/home/victor/darknet/data/dataset/images/couloir_gite_normandie.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (191).png
+/home/victor/darknet/data/dataset/images/waiting_room_28_18_altavista.png
+/home/victor/darknet/data/dataset/images/number_5 (82).png
+/home/victor/darknet/data/dataset/images/airport_inside_0514.png
+/home/victor/darknet/data/dataset/images/n457056.png
+/home/victor/darknet/data/dataset/images/conference_room4.png
+/home/victor/darknet/data/dataset/images/negavtive_img_31.png
+/home/victor/darknet/data/dataset/images/airport_inside_0137.png
+/home/victor/darknet/data/dataset/images/mailbox (23).png
+/home/victor/darknet/data/dataset/images/museo_83_02_flickr.png
+/home/victor/darknet/data/dataset/images/fire_hydrant (29).png
+/home/victor/darknet/data/dataset/images/airport_inside_0314.png
+/home/victor/darknet/data/dataset/images/fire_hydrant (25).png
+/home/victor/darknet/data/dataset/images/airport_inside_0367.png
+/home/victor/darknet/data/dataset/images/Facilities_Meetingroom01.png
+/home/victor/darknet/data/dataset/images/airport_inside_0337.png
+/home/victor/darknet/data/dataset/images/airport_inside_0546.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (33).png
+/home/victor/darknet/data/dataset/images/waiting_room_01_12_altavista.png
+/home/victor/darknet/data/dataset/images/waiting_room_17_20_altavista.png
+/home/victor/darknet/data/dataset/images/airport_inside_0586.png
+/home/victor/darknet/data/dataset/images/va_04_01_5000_32_l.png
+/home/victor/darknet/data/dataset/images/green_box_img_82.png
+/home/victor/darknet/data/dataset/images/airport_inside_0088.png
+/home/victor/darknet/data/dataset/images/airport_inside_0058.png
+/home/victor/darknet/data/dataset/images/Corridor_gif.png
+/home/victor/darknet/data/dataset/images/Corridor33.png
+/home/victor/darknet/data/dataset/images/negavtive_img_49.png
+/home/victor/darknet/data/dataset/images/green_box (17).png
+/home/victor/darknet/data/dataset/images/down_corridor_frame_gif.png
+/home/victor/darknet/data/dataset/images/airport_inside_0015.png
+/home/victor/darknet/data/dataset/images/number_5 (62).png
+/home/victor/darknet/data/dataset/images/mailbox (90).png
+/home/victor/darknet/data/dataset/images/sala_de_espera_03_14_altavista.png
+/home/victor/darknet/data/dataset/images/mailbox (91).png
+/home/victor/darknet/data/dataset/images/airport_inside_0458.png
+/home/victor/darknet/data/dataset/images/airport_inside_0485.png
+/home/victor/darknet/data/dataset/images/hallway012.png
+/home/victor/darknet/data/dataset/images/corridor3.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (36).png
+/home/victor/darknet/data/dataset/images/mailbox (43).png
+/home/victor/darknet/data/dataset/images/reprographics_corridor_Small_.png
+/home/victor/darknet/data/dataset/images/7F_Clinic_Waiting_Room.png
+/home/victor/darknet/data/dataset/images/airport_inside_0074.png
+/home/victor/darknet/data/dataset/images/airport_inside_0191.png
+/home/victor/darknet/data/dataset/images/negavtive_img_55.png
+/home/victor/darknet/data/dataset/images/negavtive_img_51.png
+/home/victor/darknet/data/dataset/images/airport_inside_0130.png
+/home/victor/darknet/data/dataset/images/fire_hydrant (101).png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (75).png
+/home/victor/darknet/data/dataset/images/airport_inside_0205.png
+/home/victor/darknet/data/dataset/images/airport_inside_0529.png
+/home/victor/darknet/data/dataset/images/green_box_img_65.png
+/home/victor/darknet/data/dataset/images/general_waiting_area.png
+/home/victor/darknet/data/dataset/images/n457055.png
+/home/victor/darknet/data/dataset/images/airport_inside_0470.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (80).png
+/home/victor/darknet/data/dataset/images/mailbox (57).png
+/home/victor/darknet/data/dataset/images/airport_inside_0272.png
+/home/victor/darknet/data/dataset/images/airport_inside_0085.png
+/home/victor/darknet/data/dataset/images/n457011.png
+/home/victor/darknet/data/dataset/images/pasillo_terramar.png
+/home/victor/darknet/data/dataset/images/green_box_img_71.png
+/home/victor/darknet/data/dataset/images/n457000.png
+/home/victor/darknet/data/dataset/images/mailbox (59).png
+/home/victor/darknet/data/dataset/images/airport_inside_0488.png
+/home/victor/darknet/data/dataset/images/number_5 (45).png
+/home/victor/darknet/data/dataset/images/airport_inside_0106.png
+/home/victor/darknet/data/dataset/images/mailbox (56).png
+/home/victor/darknet/data/dataset/images/aca_hall2.png
+/home/victor/darknet/data/dataset/images/wroom2.png
+/home/victor/darknet/data/dataset/images/negavtive_img_43.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (54).png
+/home/victor/darknet/data/dataset/images/airport_inside_0450.png
+/home/victor/darknet/data/dataset/images/salat2.png
+/home/victor/darknet/data/dataset/images/mailbox (32).png
+/home/victor/darknet/data/dataset/images/number_5 (25).png
+/home/victor/darknet/data/dataset/images/green_box (9).png
+/home/victor/darknet/data/dataset/images/hall135.png
+/home/victor/darknet/data/dataset/images/airport_inside_0154.png
+/home/victor/darknet/data/dataset/images/museo_134_21_flickr.png
+/home/victor/darknet/data/dataset/images/number_5 (5).png
+/home/victor/darknet/data/dataset/images/museum_19_19_altavista.png
+/home/victor/darknet/data/dataset/images/airport_inside_0511.png
+/home/victor/darknet/data/dataset/images/int677.png
+/home/victor/darknet/data/dataset/images/conf27.png
+/home/victor/darknet/data/dataset/images/Cafeteria.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (45).png
+/home/victor/darknet/data/dataset/images/airport_inside_0455.png
+/home/victor/darknet/data/dataset/images/airport_inside_0436.png
+/home/victor/darknet/data/dataset/images/airport_inside_0078.png
+/home/victor/darknet/data/dataset/images/meeting_room_ludovisi.png
+/home/victor/darknet/data/dataset/images/airport_inside_0544.png
+/home/victor/darknet/data/dataset/images/airport_inside_0273.png
+/home/victor/darknet/data/dataset/images/multi_obj (7).png
+/home/victor/darknet/data/dataset/images/airport_inside_0426.png
+/home/victor/darknet/data/dataset/images/airport_inside_0143.png
+/home/victor/darknet/data/dataset/images/n457069.png
+/home/victor/darknet/data/dataset/images/art2217_2.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (58).png
+/home/victor/darknet/data/dataset/images/ph_Meetings.png
+/home/victor/darknet/data/dataset/images/airport_inside_0102.png
+/home/victor/darknet/data/dataset/images/museo_21_15_altavista.png
+/home/victor/darknet/data/dataset/images/Conference_room567.png
+/home/victor/darknet/data/dataset/images/museum_37_10_altavista.png
+/home/victor/darknet/data/dataset/images/green_box_img_52.png
+/home/victor/darknet/data/dataset/images/fire_hydrant (20).png
+/home/victor/darknet/data/dataset/images/c8.png
+/home/victor/darknet/data/dataset/images/airport_inside_0502.png
+/home/victor/darknet/data/dataset/images/accueil.png
+/home/victor/darknet/data/dataset/images/airport_inside_0009.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_00026.png
+/home/victor/darknet/data/dataset/images/airport_inside_0268.png
+/home/victor/darknet/data/dataset/images/airport_inside_0460.png
+/home/victor/darknet/data/dataset/images/airport_inside_0214.png
+/home/victor/darknet/data/dataset/images/corridor_at_area2_annexA_grnd_fl_r.png
+/home/victor/darknet/data/dataset/images/green_box (16).png
+/home/victor/darknet/data/dataset/images/c14_1.png
+/home/victor/darknet/data/dataset/images/P1010081.png
+/home/victor/darknet/data/dataset/images/negavtive_img_36.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (139).png
+/home/victor/darknet/data/dataset/images/c_5_2_2_C.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (164).png
+/home/victor/darknet/data/dataset/images/airport_inside_0233.png
+/home/victor/darknet/data/dataset/images/airport_inside_0510.png
+/home/victor/darknet/data/dataset/images/airport_inside_0427.png
+/home/victor/darknet/data/dataset/images/number_5 (15).png
+/home/victor/darknet/data/dataset/images/green_box (8).png
+/home/victor/darknet/data/dataset/images/airport_inside_0433.png
+/home/victor/darknet/data/dataset/images/conference_room_2.png
+/home/victor/darknet/data/dataset/images/waiting_room_16_13_altavista.png
+/home/victor/darknet/data/dataset/images/fire_hydrant (88).png
+/home/victor/darknet/data/dataset/images/airport_inside_0247.png
+/home/victor/darknet/data/dataset/images/corridor02.png
+/home/victor/darknet/data/dataset/images/museo_24_02_altavista.png
+/home/victor/darknet/data/dataset/images/airport_inside_0017.png
+/home/victor/darknet/data/dataset/images/negavtive_img_63.png
+/home/victor/darknet/data/dataset/images/airport_inside_0443.png
+/home/victor/darknet/data/dataset/images/negavtive_img_30.png
+/home/victor/darknet/data/dataset/images/negavtive_img_46.png
+/home/victor/darknet/data/dataset/images/number_5 (31).png
+/home/victor/darknet/data/dataset/images/number_5 (63).png
+/home/victor/darknet/data/dataset/images/airport_inside_0229.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (189).png
+/home/victor/darknet/data/dataset/images/negavtive_img_17.png
+/home/victor/darknet/data/dataset/images/fire_hydrant (13).png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (9).png
+/home/victor/darknet/data/dataset/images/IMG_9659.png
+/home/victor/darknet/data/dataset/images/couloir_sized.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (50).png
+/home/victor/darknet/data/dataset/images/museum_35_10_altavista.png
+/home/victor/darknet/data/dataset/images/conference_room.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (117).png
+/home/victor/darknet/data/dataset/images/Rimi_Corridor.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (160).png
+/home/victor/darknet/data/dataset/images/mailbox (83).png
+/home/victor/darknet/data/dataset/images/mailbox (44).png
+/home/victor/darknet/data/dataset/images/airport_inside_0012.png
+/home/victor/darknet/data/dataset/images/airport_inside_0527.png
+/home/victor/darknet/data/dataset/images/airport_inside_0025.png
+/home/victor/darknet/data/dataset/images/airport_inside_0042.png
+/home/victor/darknet/data/dataset/images/hall50.png
+/home/victor/darknet/data/dataset/images/JubileeMeetingRoom.png
+/home/victor/darknet/data/dataset/images/airport_inside_0123.png
+/home/victor/darknet/data/dataset/images/museum_120_07_flickr.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (159).png
+/home/victor/darknet/data/dataset/images/waitingroom03.png
+/home/victor/darknet/data/dataset/images/Waiting_Room_sm.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (134).png
+/home/victor/darknet/data/dataset/images/chateau_salle_conference01.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (126).png
+/home/victor/darknet/data/dataset/images/negavtive_img_45.png
+/home/victor/darknet/data/dataset/images/ins30.png
+/home/victor/darknet/data/dataset/images/number_5 (73).png
+/home/victor/darknet/data/dataset/images/fire_hydrant (67).png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (65).png
+/home/victor/darknet/data/dataset/images/airport_inside_0022.png
+/home/victor/darknet/data/dataset/images/Sala_2520entrada_2520principal.png
+/home/victor/darknet/data/dataset/images/mailbox (100).png
+/home/victor/darknet/data/dataset/images/mailbox (42).png
+/home/victor/darknet/data/dataset/images/hospital-corridor.png
+/home/victor/darknet/data/dataset/images/airport_inside_0128.png
+/home/victor/darknet/data/dataset/images/airport_inside_0453.png
+/home/victor/darknet/data/dataset/images/WtRoomJan06.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (7).png
+/home/victor/darknet/data/dataset/images/museo_91_01_flickr.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (81).png
+/home/victor/darknet/data/dataset/images/green_box_img_97.png
+/home/victor/darknet/data/dataset/images/airport_inside_0375.png
+/home/victor/darknet/data/dataset/images/negavtive_img_10.png
+/home/victor/darknet/data/dataset/images/museo_03_14_flickr.png
+/home/victor/darknet/data/dataset/images/room497.png
+/home/victor/darknet/data/dataset/images/e724e933071964a02b0edd8c2237533d.png
+/home/victor/darknet/data/dataset/images/IMG_1658.png
+/home/victor/darknet/data/dataset/images/IDC_salle_de_reunion_01.png
+/home/victor/darknet/data/dataset/images/mailbox (14).png
+/home/victor/darknet/data/dataset/images/museo_32_13_flickr.png
+/home/victor/darknet/data/dataset/images/airport_inside_0184.png
+/home/victor/darknet/data/dataset/images/Untitled_ds1.png
+/home/victor/darknet/data/dataset/images/airport_inside_0343.png
+/home/victor/darknet/data/dataset/images/fire_hydrant (18).png
+/home/victor/darknet/data/dataset/images/green_box (13).png
+/home/victor/darknet/data/dataset/images/fire_hydrant (76).png
+/home/victor/darknet/data/dataset/images/fire_hydrant (42).png
+/home/victor/darknet/data/dataset/images/museum_44_15_altavista.png
+/home/victor/darknet/data/dataset/images/room450.png
+/home/victor/darknet/data/dataset/images/n457014.png
+/home/victor/darknet/data/dataset/images/room507.png
+/home/victor/darknet/data/dataset/images/accessories24.png
+/home/victor/darknet/data/dataset/images/corridora6.png
+/home/victor/darknet/data/dataset/images/airport_inside_0469.png
+/home/victor/darknet/data/dataset/images/airport_inside_0533.png
+/home/victor/darknet/data/dataset/images/conference.png
+/home/victor/darknet/data/dataset/images/bookstore_sittingarea.png
+/home/victor/darknet/data/dataset/images/conf08.png
+/home/victor/darknet/data/dataset/images/cab3.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (79).png
+/home/victor/darknet/data/dataset/images/pasillo_2.png
+/home/victor/darknet/data/dataset/images/airport_inside_0483.png
+/home/victor/darknet/data/dataset/images/museum_60_12_flickr.png
+/home/victor/darknet/data/dataset/images/c17_1.png
+/home/victor/darknet/data/dataset/images/museo_165_05_flickr.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (2).png
+/home/victor/darknet/data/dataset/images/mailbox (81).png
+/home/victor/darknet/data/dataset/images/mailbox_legs_00001.png
+/home/victor/darknet/data/dataset/images/c18.png
+/home/victor/darknet/data/dataset/images/museum_08_09_flickr.png
+/home/victor/darknet/data/dataset/images/file_001ad55a7d61f942cb9bb884711790d5.png
+/home/victor/darknet/data/dataset/images/museum_77_03_flickr.png
+/home/victor/darknet/data/dataset/images/fire_hydrant (36).png
+/home/victor/darknet/data/dataset/images/museo_26_02_altavista.png
+/home/victor/darknet/data/dataset/images/waiting.png
+/home/victor/darknet/data/dataset/images/number_5 (84).png
+/home/victor/darknet/data/dataset/images/airport_inside_0232.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (93).png
+/home/victor/darknet/data/dataset/images/airport_inside_0467.png
+/home/victor/darknet/data/dataset/images/airport_inside_0421.png
+/home/victor/darknet/data/dataset/images/airport_inside_0282.png
+/home/victor/darknet/data/dataset/images/airport_inside_0077.png
+/home/victor/darknet/data/dataset/images/museo_01_06_flickr.png
+/home/victor/darknet/data/dataset/images/museo_149_22_flickr.png
+/home/victor/darknet/data/dataset/images/conf06.png
+/home/victor/darknet/data/dataset/images/museo_10_09_altavista.png
+/home/victor/darknet/data/dataset/images/museo_07_01_flickr.png
+/home/victor/darknet/data/dataset/images/corridor_in_dorm_b.png
+/home/victor/darknet/data/dataset/images/couloir67.png
+/home/victor/darknet/data/dataset/images/airport_inside_0560.png
+/home/victor/darknet/data/dataset/images/airport_inside_0567.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (71).png
+/home/victor/darknet/data/dataset/images/airport_inside_0035.png
+/home/victor/darknet/data/dataset/images/number_5 (16).png
+/home/victor/darknet/data/dataset/images/waiting_room_39_03_altavista.png
+/home/victor/darknet/data/dataset/images/Main_Corridor.png
+/home/victor/darknet/data/dataset/images/400_Waiting_Room_2.png
+/home/victor/darknet/data/dataset/images/museo_157_13_flickr.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (39).png
+/home/victor/darknet/data/dataset/images/conf23.png
+/home/victor/darknet/data/dataset/images/a67092.png
+/home/victor/darknet/data/dataset/images/number_5 (86).png
+/home/victor/darknet/data/dataset/images/airport_inside_0547.png
+/home/victor/darknet/data/dataset/images/image004.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (197).png
+/home/victor/darknet/data/dataset/images/green_box (39).png
+/home/victor/darknet/data/dataset/images/IMG_9661.png
+/home/victor/darknet/data/dataset/images/waitingroom04.png
+/home/victor/darknet/data/dataset/images/museum_127_04_flickr.png
+/home/victor/darknet/data/dataset/images/conference-room1.png
+/home/victor/darknet/data/dataset/images/airport_inside_0243.png
+/home/victor/darknet/data/dataset/images/museum_19_18_altavista.png
+/home/victor/darknet/data/dataset/images/museum_26_20_altavista.png
+/home/victor/darknet/data/dataset/images/corridor2.png
+/home/victor/darknet/data/dataset/images/lpi_a_l_corridor.png
+/home/victor/darknet/data/dataset/images/pasillo_interior_1_t.png
+/home/victor/darknet/data/dataset/images/airport_inside_0089.png
+/home/victor/darknet/data/dataset/images/airport_inside_0417.png
+/home/victor/darknet/data/dataset/images/corridor04.png
+/home/victor/darknet/data/dataset/images/n457013.png
+/home/victor/darknet/data/dataset/images/p1010073_c.png
+/home/victor/darknet/data/dataset/images/airport_inside_0008.png
+/home/victor/darknet/data/dataset/images/p1010077_c.png
+/home/victor/darknet/data/dataset/images/green_box (26).png
+/home/victor/darknet/data/dataset/images/mailbox (26).png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (59).png
+/home/victor/darknet/data/dataset/images/airport_inside_0230.png
+/home/victor/darknet/data/dataset/images/mailbox (54).png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (168).png
+/home/victor/darknet/data/dataset/images/airport_inside_0335.png
+/home/victor/darknet/data/dataset/images/green_box_img_77.png
+/home/victor/darknet/data/dataset/images/int200.png
+/home/victor/darknet/data/dataset/images/airport_inside_0406.png
+/home/victor/darknet/data/dataset/images/airport_inside_0225.png
+/home/victor/darknet/data/dataset/images/secondaire_couloir.png
+/home/victor/darknet/data/dataset/images/Waiting_Room_3.png
+/home/victor/darknet/data/dataset/images/airport_inside_0451.png
+/home/victor/darknet/data/dataset/images/airport_inside_0549.png
+/home/victor/darknet/data/dataset/images/salle_reunion443.png
+/home/victor/darknet/data/dataset/images/airport_inside_0097.png
+/home/victor/darknet/data/dataset/images/Board_Room.png
+/home/victor/darknet/data/dataset/images/IMG_3275.png
+/home/victor/darknet/data/dataset/images/fire_hydrant (74).png
+/home/victor/darknet/data/dataset/images/conf01.png
+/home/victor/darknet/data/dataset/images/museum_01_01_altavista.png
+/home/victor/darknet/data/dataset/images/airport_inside_0394.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_00005.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (194).png
+/home/victor/darknet/data/dataset/images/green_box_img_41.png
+/home/victor/darknet/data/dataset/images/Corridor_.png
+/home/victor/darknet/data/dataset/images/airport_inside_0304.png
+/home/victor/darknet/data/dataset/images/airport_inside_0561.png
+/home/victor/darknet/data/dataset/images/c12.png
+/home/victor/darknet/data/dataset/images/conference5.png
+/home/victor/darknet/data/dataset/images/museum_36_19_altavista.png
+/home/victor/darknet/data/dataset/images/couloir_ch1_5e.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (67).png
+/home/victor/darknet/data/dataset/images/pasillo_bajo_c.png
+/home/victor/darknet/data/dataset/images/waiting_room_36_14_altavista.png
+/home/victor/darknet/data/dataset/images/fire_hydrant (94).png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (121).png
+/home/victor/darknet/data/dataset/images/airport_inside_0607.png
+/home/victor/darknet/data/dataset/images/main_building_corridor_021005.png
+/home/victor/darknet/data/dataset/images/mailbox (77).png
+/home/victor/darknet/data/dataset/images/c16.png
+/home/victor/darknet/data/dataset/images/fire_hydrant (54).png
+/home/victor/darknet/data/dataset/images/korridor3.png
+/home/victor/darknet/data/dataset/images/c3_1.png
+/home/victor/darknet/data/dataset/images/c13_1.png
+/home/victor/darknet/data/dataset/images/loca_reunion2.png
+/home/victor/darknet/data/dataset/images/airport_inside_0198.png
+/home/victor/darknet/data/dataset/images/MeetingRoom.png
+/home/victor/darknet/data/dataset/images/fire_hydrant (92).png
+/home/victor/darknet/data/dataset/images/P1010091.png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (102).png
+/home/victor/darknet/data/dataset/images/mailbox_legs_ (16).png
