@@ -114,7 +114,7 @@ def world_to_occ_grid(self, world_x, world_y):
 def update_unreachable_frontiers(self, pos_xy, frontiers):
     
     # Get neighbours of this cell depending on radius
-    radius = 30
+    radius = 20
     pos_x = pos_xy[0]
     pos_y = pos_xy[1]
 
