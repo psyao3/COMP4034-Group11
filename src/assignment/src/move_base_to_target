@@ -1,0 +1,75 @@
+
+# Changes to testv3
+
+
+    self.get_depth = False
+    self.facing_object = False
+
+
+    self.depth_sub = rospy.Subscriber('camera/depth/image_raw', Image, depth_callback, (self))
+
+
+    # ~line 164
+
+    elif self.is_target:
+
+    self.get_depth = True
+    while self.get_depth:
+        
+        self.rate.sleep()
+
+
+    #self.beacon_to_target()
+
+
+
+# additions to callbacks
+
+def depth_callback(data, self):
+    '''
+    centralises the bounding box on the robot vision and creates a move base goal 
+    '''  
+    if self.depth == True:
+
+        rospy.loginfo ("depth")
+
+        depth_image = self.bridge.imgmsg_to_cv2(data, "passthrough")
+
+        _, w = depth_image.shape # width
+        twist = Twist()
+
+        # distance to object
+        depth = depth_image[self.goal_y,self.goal_x]
+        
+        if not self.facing_object:
+            rospy.loginfo ("depth: {} ".format(depth))
+            # ideally this would be completely centered
+            if not ((w//2) - (self.box_width/2)  <=  self.goal_x and self.goal_x <= (w//2) + (self.box_width/2)):
+
+                if (self.goal_x > w//2):
+            
+                    twist.angular.z = -self.angular_speed    
+                else:
+                    twist.angular.z = self.angular_speed  
+                                 
+                self.pub.publish(twist)
+                self.rate.sleep()
+            else:
+                self.facing_object = True
+        else:
+            goal = MoveBaseGoal()
+
+            # using base_link
+            
+            goal.target_pose.header.frame_id = "base_link"
+            goal.target_pose.header.stamp = rospy.Time.now()
+
+            # set positions of the goal location
+            goal.target_pose.pose.position = Point(depth -0.5, 0, 0)
+            goal.target_pose.pose.orientation.x = 0.0
+            goal.target_pose.pose.orientation.y = 0.0
+            goal.target_pose.pose.orientation.z = 0.0
+            goal.target_pose.pose.orientation.w = 1.0
+   
+            self.depth = False
+            self.facing_object = False
