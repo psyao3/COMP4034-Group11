@@ -35,7 +35,7 @@ class Follower:
 
         # Obstacle Avoidance thresholds
         self.front_thresh = 0.5
-        self.side_thresh = 0.3
+        self.side_thresh = 0.5
 
         # Speeds to use
         self.linear_speed = 0.3
@@ -44,7 +44,8 @@ class Follower:
         # Occupancy grid initialisation
         self.occ_grid = None
         self.occ_grid_info = None
-        self.occ_threshold = 60 # Threshold for obstacle probability; so that frontiers are only considered if below this value.
+        self.occ_threshold = 50 # Threshold for obstacle probability; so that frontiers are only considered if below this value.
+        
         # Pose for odom
         self.pose = Pose2D()
 
@@ -117,32 +118,41 @@ class Follower:
         self.pub.publish(Twist())
 
 
-    def main(self):
-
-        # Main control here. Control logic extracted from callbacks.
-    
+   # Check if target reached
+    # IF the bottom of the bounding box (goal_y) is close to the bottom
+    # of the camera view in pixels (>1080 * 0.8), then object reached.
+    #self.explore()
+    # FOR NUMBER 5 ONLY:
+    # If the box width is 1.5 * box height, goal reached. May need to tweak
+    # this, but chose this based on observed box behaviour when closing in on
+    # the number 5 object.
+    def check_arrival(self):
+        
         # Define h,w of image input
         w = 1920
         h = 1080
 
+        mailbox = (self.current_tgt_class == "mailbox legs") and (self.goal_y >= h * 0.75)
+        fire = (self.current_tgt_class == "fire hydrant") and (self.box_width > 1.3 * self.box_height)
+        box = (self.current_tgt_class == "green box") and (self.goal_y >= h * 0.75)
+        five = (self.current_tgt_class == "number 5") and  (self.box_width > 1.5 * self.box_height)
+
+        return mailbox or fire or box or five
+
+    def main(self):
+
+        # Main control here. Control logic extracted from callbacks.
+    
+       
+
         # Stop if all 4 targets have been found. TODO: add condition to stop after 5 mins (demo timer)
         while not rospy.is_shutdown() and not len(self.complete) > 3: #and (rospy.get_rostime() - self.start_time) <= self.time_limit:
             
-            if time.time() - self.start_time > self.time_limit:
-                rospy.loginfo("TIME LIMIT EXPIRED")
-            # Check if target reached
-            # IF the bottom of the bounding box (goal_y) is close to the bottom
-            # of the camera view in pixels (>1080 * 0.8), then object reached.
-            #self.explore()
-            # FOR NUMBER 5 ONLY:
-            # If the box width is 1.5 * box height, goal reached. May need to tweak
-            # this, but chose this based on observed box behaviour when closing in on
-            # the number 5 object.
-            if self.is_target and (self.goal_y >= h * 0.75 or 
-             ((self.current_tgt_class == "number 5") and 
-             (self.box_width > 1.5 * self.box_height)) or
-             ((self.current_tgt_class == "mailbox") and
-              (self.goal_y * 0.75))):
+            #if time.time() - self.start_time > self.time_limit:
+                #rospy.loginfo("TIME LIMIT EXPIRED")
+          
+            # Is true if we have arrived at an obstacle
+            if self.check_arrival():
                 # Stop
                 self.stop()
 
@@ -257,6 +267,7 @@ class Follower:
         plt.imshow(grid_target, cmap='hot', interpolation='nearest')
         plt.show()
 
+    # Publish the frontiers to a topic so they can be visualized in RViz
     def publish_frontiers(self, frontiers):
         # Initialise a 384x384 grid full of ones
         grid_target = np.zeros((384, 384))
@@ -280,11 +291,14 @@ class Follower:
         rospy.loginfo(self.complete) # The targets
 
         # Extra stats can be added w.r.t to frontiers
-        '''
-            number of frontiers explored?
-            number of move_base commands sent?
-            % of map explored?
-        '''
+        not_visited = np.count_nonzero(self.occ_grid.reshape(-1) == -1)
+        not_visited_prc = not_visited/len(self.occ_grid.reshape(-1))
+
+        self.ignore_frontiers = []
+        frontiers = get_frontiers(self)
+
+        rospy.loginfo("Number of known frontiers remaining (individual points): %i" % len(frontiers))
+        rospy.loginfo("Percentage of unknown cells remaining: %f" % not_visited_prc)
 
 
     # Adapted obstacle avoidance from previous tasks.

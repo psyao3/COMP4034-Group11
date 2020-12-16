@@ -47,7 +47,8 @@ def box_callback(data, self):
     boxes = []
 
     for box in data.bounding_boxes:
-        if box.Class not in ignore:
+        # ignore mailbox for now, beacon only to legs
+        if box.Class not in ignore and box.Class != "mailbox":
             boxes.append(box)
 
    
@@ -111,7 +112,7 @@ def scan_callback(msg, self):
 
     obst_dists = []
     for i in range(-60, 60, 10):
-        obst_dists.append(average_distance(self.ranges, i, 8))
+        obst_dists.append(average_distance(self.ranges, i, 10))
 
     self.right_obst = min(obst_dists[0:5])
     self.front_obst = min(obst_dists[5:7])
