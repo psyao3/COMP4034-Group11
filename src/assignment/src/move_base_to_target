@@ -29,7 +29,7 @@ def depth_callback(data, self):
     '''
     centralises the bounding box on the robot vision and creates a move base goal 
     '''  
-    if self.depth == True:
+    if self.get_depth == True:
 
         rospy.loginfo ("depth")
 
@@ -43,7 +43,6 @@ def depth_callback(data, self):
         
         if not self.facing_object:
             rospy.loginfo ("depth: {} ".format(depth))
-            # ideally this would be completely centered
             if not ((w//2) - (self.box_width/2)  <=  self.goal_x and self.goal_x <= (w//2) + (self.box_width/2)):
 
                 if (self.goal_x > w//2):
@@ -57,6 +56,14 @@ def depth_callback(data, self):
             else:
                 self.facing_object = True
         else:
+
+
+            client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
+
+            while not client.wait_for_server(rospy.Duration.from_sec(5.0)):
+                rospy.loginfo("Waiting for the move_base action server")
+
+
             goal = MoveBaseGoal()
 
             # using base_link
@@ -65,11 +72,22 @@ def depth_callback(data, self):
             goal.target_pose.header.stamp = rospy.Time.now()
 
             # set positions of the goal location
-            goal.target_pose.pose.position = Point(depth -0.5, 0, 0)
-            goal.target_pose.pose.orientation.x = 0.0
-            goal.target_pose.pose.orientation.y = 0.0
-            goal.target_pose.pose.orientation.z = 0.0
+            goal.target_pose.pose.position.x = depth -0.3
             goal.target_pose.pose.orientation.w = 1.0
-   
-            self.depth = False
+
+
+            rospy.loginfo("Sending goal location")
+            client.send_goal(goal)
+
+            client.wait_for_result(rospy.Duration(60))
+        
+            if (client.get_state() ==  GoalStatus.SUCCEEDED):
+                rospy.loginfo("You have reached the destination")        
+            else:
+                rospy.loginfo("The robot failed to reach the destination")
+
+
+            self.complete.append(self.current_tgt_class)
+            self.is_target = False
             self.facing_object = False
+            self.depth = False
