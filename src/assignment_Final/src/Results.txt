@@ -1,0 +1,7 @@
+Current Date and Time: time.struct_time(tm_year=2020, tm_mon=12, tm_mday=16, tm_hour=13, tm_min=55, tm_sec=25, tm_wday=2, tm_yday=351, tm_isdst=0)
+Statistics of this run:
+Runtime in minutes: 2.465210
+Targets found: 4
+Number of known frontiers remaining (individual points): 263
+Number of unknown cells remaining: 127363.000000
+Percentage of unknown cells remaining: 86.373562 %
