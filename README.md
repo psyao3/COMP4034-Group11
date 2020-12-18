@@ -1,5 +1,5 @@
 # COMP4034-Group11
-Group 11
+
 
 
 We are unable to submit the entirety of our darknet_ros package, due to size limitations.
@@ -13,8 +13,7 @@ Once everything installed, please run:
 	roslaunch assignment navigation.launch (Modified to launch gmapping)
 	rosrun assignment main.py
 	
-########################################################################################################
-
+***
 Final ~/catkin_workspace should be:
 
 ~/catkin_workspace/src/darknet_ros
@@ -30,22 +29,19 @@ Final ~/catkin_workspace should be:
     -
     -misc files
 
-########################################################################################################
-
+***
 Step 2a is optional if you have a CUDA enabled GPU
 
 Steps 2b & 2c (specific to our Yolov4 Model), can be done after step 3.
 
 
-########################################################################################################
-
+***
 STEP 1 ----------------------------------------------------
 do: 
 
 git clone --recursive git@github.com:tom13133/darknet_ros.git
 
-########################################################################################################
-
+***
 STEP 2 ---------------------------------------------------- #FOR USE WITH CPU
 do the following:
 
@@ -97,16 +93,14 @@ $ sudo apt-get autoremove
 
 ALSO: make sure to delete your build folder in your catkin workspace. For some reason mine wouldn't find the right CUDA version until I had.
 
-########################################################################################################
-
+***
 STEP 2b ----------------------------------------------------
 do:
 
 from "~/catkin_workspace/src/darknet_ros/darknet_ros/config"
 add "yolov4-tiny.yaml" from https://github.com/psyao3/COMP4034-Group11/src/yolov4-tiny.yaml
 
-########################################################################################################
-
+***
 STEP 2c ----------------------------------------------------
 do:
 
